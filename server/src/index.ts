@@ -12,6 +12,7 @@ import githubRoutes from './routes/github';
 import projectRoutes from './routes/project.routes';
 import issueRoutes from './routes/issue.routes';
 import sprintRoutes from './routes/sprint.routes';
+import aiRoutes from './routes/ai.routes';
 
 const app: Application = express();
 const PORT = process.env['PORT'] || 5000;
@@ -35,6 +36,7 @@ app.use('/api/github', githubRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/sprints', sprintRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check
 app.get('/health', (_req, res) => {

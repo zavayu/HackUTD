@@ -28,11 +28,31 @@ export function NewStoryModal({ isOpen, onClose, onCreateStory }: NewStoryModalP
     tags: [] as string[],
   });
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setStep('generating');
     
-    // Simulate AI generation
-    setTimeout(() => {
+    try {
+      const { aiService } = await import('../services/aiService');
+      const response = await aiService.generateStory(userInput);
+      
+      if (response.success && response.story) {
+        const story = {
+          title: response.story.title,
+          description: response.story.description,
+          type: response.story.type,
+          priority: response.story.priority,
+          estimatedHours: response.story.estimatedHours,
+          acceptanceCriteria: response.story.acceptanceCriteria,
+          tags: ['ai-generated'],
+          storyPoints: Math.ceil(response.story.estimatedHours / 8),
+          progress: 0,
+        };
+        setGeneratedStory(story);
+        setStep('preview');
+      }
+    } catch (error: any) {
+      console.error('AI generation error:', error);
+      // Fallback to simple generation
       const story = {
         title: `Implement ${userInput}`,
         description: `As a user, I want to ${userInput.toLowerCase()} so that I can improve my workflow efficiency.`,
@@ -41,14 +61,14 @@ export function NewStoryModal({ isOpen, onClose, onCreateStory }: NewStoryModalP
           'Feature includes proper error handling',
           'All interactions are logged for analytics',
         ],
-        tags: ['feature', 'ai-generated'],
+        tags: ['feature'],
         priority: 'medium' as const,
         storyPoints: 5,
         progress: 0,
       };
       setGeneratedStory(story);
       setStep('preview');
-    }, 2000);
+    }
   };
 
   const handleCreate = () => {
@@ -370,6 +390,50 @@ export function NewStoryModal({ isOpen, onClose, onCreateStory }: NewStoryModalP
                   className="w-full h-24 px-4 py-2 bg-accent border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                 />
               </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1">Type</label>
+                  <select
+                    value={generatedStory.type || 'story'}
+                    onChange={(e) => setGeneratedStory({ ...generatedStory, type: e.target.value })}
+                    className="w-full px-4 py-2 bg-accent border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="story">Story</option>
+                    <option value="task">Task</option>
+                    <option value="bug">Bug</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1">Priority</label>
+                  <select
+                    value={generatedStory.priority}
+                    onChange={(e) => setGeneratedStory({ ...generatedStory, priority: e.target.value })}
+                    className="w-full px-4 py-2 bg-accent border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1">Estimated Hours</label>
+                  <input
+                    type="number"
+                    value={generatedStory.estimatedHours || 8}
+                    onChange={(e) => {
+                      const hours = parseInt(e.target.value) || 8;
+                      setGeneratedStory({ 
+                        ...generatedStory, 
+                        estimatedHours: hours,
+                        storyPoints: Math.ceil(hours / 8)
+                      });
+                    }}
+                    min="1"
+                    className="w-full px-4 py-2 bg-accent border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
               <div>
                 <label className="block text-sm text-muted-foreground mb-2">Acceptance Criteria</label>
                 <div className="space-y-2">
@@ -382,13 +446,13 @@ export function NewStoryModal({ isOpen, onClose, onCreateStory }: NewStoryModalP
                 </div>
               </div>
               <div className="flex gap-2">
-                <Badge className="bg-yellow-500/10 text-yellow-600">
-                  {generatedStory.priority}
+                <Badge variant="outline">
+                  {generatedStory.storyPoints} story points
                 </Badge>
                 <Badge variant="outline">
-                  {generatedStory.storyPoints} pts
+                  {generatedStory.estimatedHours || 8} hours
                 </Badge>
-                {generatedStory.tags.map((tag: string) => (
+                {generatedStory.tags?.map((tag: string) => (
                   <Badge key={tag} variant="secondary">
                     {tag}
                   </Badge>
