@@ -188,7 +188,7 @@ export function ProjectView({
             )}
 
             {activeTab === 'insights' && (
-              <InsightsView />
+              <InsightsView projectId={selectedProject.id} />
             )}
 
             {activeTab === 'settings' && (
@@ -211,6 +211,7 @@ export function ProjectView({
             onClose={() => onAICopilotToggle()}
             onPromptClick={onAIPrompt}
             onApplyChanges={onApplyAIChanges}
+            projectId={selectedProject.id}
           />
         </div>
       </div>

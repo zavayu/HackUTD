@@ -1,36 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Zap, Users, Target, AlertCircle, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, Zap, Users, Target, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { GitHubMetrics } from './GitHubMetrics';
 import { GitHubCommitFeed } from './GitHubCommitFeed';
 import { GitHubPRTracker } from './GitHubPRTracker';
 import { GitHubAIInsights } from './GitHubAIInsights';
 import { useGitHub } from './GitHubContext';
+import { insightsService, ProjectInsights } from '../services/insightsService';
 
-// Sprint velocity data
-const sprintVelocityData = [
-  { sprint: 'S1', completed: 45, planned: 50 },
-  { sprint: 'S2', completed: 52, planned: 55 },
-  { sprint: 'S3', completed: 58, planned: 60 },
-  { sprint: 'S4', completed: 55, planned: 58 },
-  { sprint: 'S5', completed: 62, planned: 65 },
-  { sprint: 'S6', completed: 62, planned: 68 },
-];
-
-// Epic progress data (colors will be computed dynamically)
+// Epic progress data (placeholder - TODO: get from backend)
 const epicProgressData = [
   { name: 'User Auth', value: 85 },
   { name: 'Dashboard', value: 60 },
   { name: 'Analytics', value: 40 },
   { name: 'Mobile App', value: 25 },
-];
-
-// Team performance data
-const teamPerformanceData = [
-  { member: 'Sarah Chen', completed: 18, inProgress: 3 },
-  { member: 'Mike Johnson', completed: 15, inProgress: 4 },
-  { member: 'Alex Kim', completed: 17, inProgress: 2 },
-  { member: 'Emma Davis', completed: 12, inProgress: 3 },
 ];
 
 interface KPICardProps {
@@ -63,8 +46,14 @@ const KPICard: React.FC<KPICardProps> = ({ icon, iconBg, title, value, trend, tr
   );
 };
 
-export const AIInsightsView: React.FC = () => {
+interface AIInsightsViewProps {
+  projectId: string;
+}
+
+export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ projectId }) => {
   const { isConnected } = useGitHub();
+  const [insights, setInsights] = useState<ProjectInsights | null>(null);
+  const [loading, setLoading] = useState(true);
   const [chartColors, setChartColors] = useState({
     primary: '#3b82f6',
     chart1: '#3b82f6',
@@ -85,7 +74,7 @@ export const AIInsightsView: React.FC = () => {
     const updateColors = () => {
       const root = document.documentElement;
       const style = getComputedStyle(root);
-      
+
       const primary = style.getPropertyValue('--color-primary').trim() || '#3b82f6';
       const chart1 = style.getPropertyValue('--color-chart-1').trim() || primary;
       const chart2 = style.getPropertyValue('--color-chart-2').trim() || '#14b8a6';
@@ -95,7 +84,7 @@ export const AIInsightsView: React.FC = () => {
       const border = style.getPropertyValue('--color-border').trim() || 'rgba(255,255,255,0.1)';
       const muted = style.getPropertyValue('--color-muted-foreground').trim() || '#a1a1a1';
       const cardBg = style.getPropertyValue('--color-card').trim() || 'rgb(10, 10, 10)';
-      
+
       setChartColors({
         primary,
         chart1,
@@ -124,6 +113,49 @@ export const AIInsightsView: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
+  // Fetch insights data
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        setLoading(true);
+        const data = await insightsService.getProjectInsights(projectId);
+        setInsights(data);
+      } catch (error) {
+        console.error('Failed to fetch insights:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (projectId) {
+      fetchInsights();
+    }
+  }, [projectId]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-96 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!insights) {
+    return (
+      <div className="w-full h-96 flex items-center justify-center">
+        <p className="text-muted-foreground">No insights available</p>
+      </div>
+    );
+  }
+
+  const sprintVelocityData = insights.sprintVelocity.length > 0
+    ? insights.sprintVelocity
+    : [{ sprint: 'No data', completed: 0, planned: 0 }];
+
+  const teamPerformanceData = insights.teamPerformance.length > 0
+    ? insights.teamPerformance
+    : [{ member: 'No data', completed: 0, inProgress: 0 }];
+
   return (
     <div className="w-full space-y-8 pb-8">
       {/* Header */}
@@ -137,37 +169,35 @@ export const AIInsightsView: React.FC = () => {
         <KPICard
           icon={<TrendingUp className="w-5 h-5" style={{ color: chartColors.chart2 }} />}
           iconBg="bg-accent"
-          title="Sprint Completion"
-          value="95%"
-          trend="+12%"
+          title="Completion Rate"
+          value={`${insights.kpis.completionRate}%`}
+          trend={insights.kpis.completionRate >= 70 ? 'Good' : 'Needs attention'}
           trendColor="text-foreground"
-          trendIcon={<TrendingUp className="w-3 h-3" />}
+          trendIcon={insights.kpis.completionRate >= 70 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
         />
         <KPICard
           icon={<Zap className="w-5 h-5" style={{ color: chartColors.primary }} />}
           iconBg="bg-accent"
-          title="Team Velocity"
-          value="62"
-          trend="+8%"
+          title="Total Issues"
+          value={insights.kpis.totalIssues}
+          trend={`${insights.kpis.completedIssues} completed`}
           trendColor="text-foreground"
-          trendIcon={<TrendingUp className="w-3 h-3" />}
         />
         <KPICard
           icon={<Target className="w-5 h-5" style={{ color: chartColors.chart3 }} />}
           iconBg="bg-accent"
-          title="Release Goal"
-          value="Nov 14"
-          trend="On track"
+          title="Avg Cycle Time"
+          value={`${insights.kpis.avgCycleTime}d`}
+          trend={insights.kpis.avgCycleTime <= 7 ? 'Fast' : 'Could improve'}
           trendColor="text-foreground"
         />
         <KPICard
           icon={<AlertCircle className="w-5 h-5" style={{ color: chartColors.chart4 }} />}
           iconBg="bg-accent"
-          title="Blockers"
-          value="3"
-          trend="-2 from last"
+          title="In Progress"
+          value={insights.kpis.inProgressIssues}
+          trend={`${insights.kpis.activeSprints} active sprints`}
           trendColor="text-foreground"
-          trendIcon={<TrendingDown className="w-3 h-3" />}
         />
       </div>
 
