@@ -7,6 +7,8 @@ export interface ICommit {
   message: string;
   author: string;
   date: Date;
+  additions?: number;
+  deletions?: number;
   embeddingId?: string;
 }
 
@@ -67,6 +69,14 @@ const CommitSchema = new Schema<ICommit>({
   date: {
     type: Date,
     required: true
+  },
+  additions: {
+    type: Number,
+    default: 0
+  },
+  deletions: {
+    type: Number,
+    default: 0
   },
   embeddingId: {
     type: String,

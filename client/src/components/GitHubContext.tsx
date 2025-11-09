@@ -230,14 +230,21 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
         
         // Transform commits
         if (data.commits) {
-          setCommits(data.commits.map((c: any) => ({
+          const transformedCommits = data.commits.map((c: any) => ({
             sha: c.sha,
             message: c.message,
             author: c.author,
             date: c.date,
             additions: c.additions || 0,
             deletions: c.deletions || 0,
-          })));
+          }));
+          
+          // Debug: Log first commit date
+          if (transformedCommits.length > 0) {
+            console.log('First commit date:', transformedCommits[0].date, 'Type:', typeof transformedCommits[0].date);
+          }
+          
+          setCommits(transformedCommits);
         }
         
         // Transform pull requests

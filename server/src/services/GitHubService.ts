@@ -17,6 +17,11 @@ export interface GitHubCommit {
   author: {
     login: string;
   } | null;
+  stats?: {
+    additions: number;
+    deletions: number;
+    total: number;
+  };
 }
 
 export interface GitHubPullRequest {
@@ -83,7 +88,7 @@ export class GitHubService {
     
     const params = {
       since: sinceDate.toISOString(),
-      per_page: 100
+      per_page: 30 // Reduced to 30 since we'll fetch details for each
     };
 
     logger.info('Fetching GitHub commits', { 
@@ -91,12 +96,40 @@ export class GitHubService {
       since: sinceDate.toISOString() 
     });
 
-    return this.makeRequestWithRetry<GitHubCommit[]>(
+    const commits = await this.makeRequestWithRetry<GitHubCommit[]>(
       url,
       accessToken,
       { params },
       `fetch commits for ${repoFullName}`
     );
+
+    // Fetch detailed stats for each commit (limited to first 20 to avoid rate limits)
+    const commitsWithStats = await Promise.all(
+      commits.slice(0, 20).map(async (commit) => {
+        try {
+          const detailUrl = `${this.baseURL}/repos/${repoFullName}/commits/${commit.sha}`;
+          const detailedCommit = await this.makeRequestWithRetry<any>(
+            detailUrl,
+            accessToken,
+            {},
+            `fetch commit details for ${commit.sha.substring(0, 7)}`
+          );
+          
+          return {
+            ...commit,
+            stats: detailedCommit.stats || { additions: 0, deletions: 0, total: 0 }
+          };
+        } catch (error) {
+          logger.warn('Failed to fetch commit stats', { sha: commit.sha });
+          return {
+            ...commit,
+            stats: { additions: 0, deletions: 0, total: 0 }
+          };
+        }
+      })
+    );
+
+    return commitsWithStats;
   }
 
   /**
@@ -478,8 +511,19 @@ export class GitHubService {
         sha: commit.sha,
         message: commit.commit.message,
         author: commit.author?.login || commit.commit.author.name,
-        date: new Date(commit.commit.author.date)
+        date: new Date(commit.commit.author.date),
+        additions: commit.stats?.additions || 0,
+        deletions: commit.stats?.deletions || 0
       }));
+      
+      // Debug: Log first commit date
+      if (transformedCommits.length > 0 && transformedCommits[0]) {
+        logger.info('First commit date during sync', {
+          originalDate: commits[0]?.commit.author.date,
+          transformedDate: transformedCommits[0].date,
+          isoString: transformedCommits[0].date.toISOString()
+        });
+      }
 
       const transformedPRs = pullRequests.map(pr => ({
         number: pr.number,
@@ -571,6 +615,17 @@ export class GitHubService {
       const repo = await this.gitHubRepoRepository.findById(repoId);
       if (!repo) {
         throw new ExternalServiceError('GitHub', 'Repository not found');
+      }
+
+      // Log first commit to debug
+      if (repo.commits && repo.commits.length > 0 && repo.commits[0]) {
+        logger.info('Sample commit data', { 
+          commit: {
+            sha: repo.commits[0].sha,
+            additions: repo.commits[0].additions || 0,
+            deletions: repo.commits[0].deletions || 0
+          }
+        });
       }
 
       return {
