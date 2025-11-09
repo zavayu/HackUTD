@@ -1,14 +1,17 @@
 import dotenv from 'dotenv';
+
+// Load environment variables FIRST before any other imports
+dotenv.config();
+
 import express, { Application } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import passport from './config/passport';
 import authRoutes from './routes/auth.routes';
+import githubRoutes from './routes/github';
 import projectRoutes from './routes/project.routes';
 import issueRoutes from './routes/issue.routes';
 import sprintRoutes from './routes/sprint.routes';
-
-// Load environment variables
-dotenv.config();
 
 const app: Application = express();
 const PORT = process.env['PORT'] || 5000;
@@ -24,9 +27,11 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/github', githubRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/sprints', sprintRoutes);
@@ -40,7 +45,7 @@ app.get('/health', (_req, res) => {
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB');
-    
+
     // Start server
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);

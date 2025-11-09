@@ -6,8 +6,8 @@ import { GitHubRepoRepository } from '../repositories/GitHubRepoRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { decrypt } from '../utils/crypto';
 import { logger } from '../utils/logger';
-import { 
-  AuthenticationError, 
+import {
+  AuthenticationError,
   NotFoundError
 } from '../utils/errors';
 import Joi from 'joi';
@@ -39,26 +39,89 @@ const repoIdSchema = Joi.object({
 });
 
 /**
+ * Get user's GitHub repositories from GitHub API
+ * GET /api/github/available-repos
+ */
+router.get('/available-repos', verifyToken, async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user.userId;
+
+    logger.info('Fetching available GitHub repositories', { userId });
+
+    // Get user's GitHub access token
+    const user = await userRepository.findById(userId);
+    if (!user || !user.githubAccessToken) {
+      throw new AuthenticationError('GitHub access token not found. Please authenticate with GitHub first.');
+    }
+
+    // Decrypt the access token
+    const accessToken = decrypt(user.githubAccessToken);
+
+    // Fetch repositories from GitHub API
+    const response = await fetch('https://api.github.com/user/repos?per_page=100&sort=updated', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'ProdigyPM'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.statusText}`);
+    }
+
+    const repos = (await response.json()) as any[];
+
+    // Format the response
+    const formattedRepos = repos.map((repo: any) => ({
+      id: repo.id,
+      name: repo.name,
+      full_name: repo.full_name,
+      owner: repo.owner.login,
+      description: repo.description,
+      language: repo.language,
+      private: repo.private,
+      stars: repo.stargazers_count,
+      forks: repo.forks_count,
+      open_issues: repo.open_issues_count,
+      updated_at: repo.updated_at
+    }));
+
+    res.json({
+      success: true,
+      data: formattedRepos
+    });
+
+  } catch (error) {
+    logger.error('Failed to fetch available repositories', {
+      userId: req.user?.userId,
+      error: error instanceof Error ? error.message : error
+    });
+    next(error);
+  }
+});
+
+/**
  * Get user's connected repositories
  * GET /api/github/repos
  */
 router.get('/repos', verifyToken, async (req: any, res: Response, next: NextFunction) => {
   try {
     const userId = req.user.userId;
-    
+
     logger.info('Getting user repositories', { userId });
 
     const repos = await gitHubRepoRepository.findByUserId(userId);
-    
+
     res.json({
       success: true,
       data: repos
     });
 
   } catch (error) {
-    logger.error('Failed to get user repositories', { 
+    logger.error('Failed to get user repositories', {
       userId: req.user?.userId,
-      error: error instanceof Error ? error.message : error 
+      error: error instanceof Error ? error.message : error
     });
     next(error);
   }
@@ -68,7 +131,7 @@ router.get('/repos', verifyToken, async (req: any, res: Response, next: NextFunc
  * Connect a new repository
  * POST /api/github/repos/connect
  */
-router.post('/repos/connect', 
+router.post('/repos/connect',
   verifyToken,
   validateBody(connectRepoSchema),
   async (req: any, res: Response, next: NextFunction) => {
@@ -97,10 +160,10 @@ router.post('/repos/connect',
       });
 
     } catch (error) {
-      logger.error('Failed to connect repository', { 
+      logger.error('Failed to connect repository', {
         userId: req.user?.userId,
         repo: req.body?.repoFullName,
-        error: error instanceof Error ? error.message : error 
+        error: error instanceof Error ? error.message : error
       });
       next(error);
     }
@@ -140,10 +203,10 @@ router.delete('/repos/:id',
       });
 
     } catch (error) {
-      logger.error('Failed to disconnect repository', { 
+      logger.error('Failed to disconnect repository', {
         userId: req.user?.userId,
         repoId: req.params['id'],
-        error: error instanceof Error ? error.message : error 
+        error: error instanceof Error ? error.message : error
       });
       next(error);
     }
@@ -184,10 +247,10 @@ router.post('/repos/:id/sync',
       });
 
     } catch (error) {
-      logger.error('Failed to sync repository', { 
+      logger.error('Failed to sync repository', {
         userId: req.user?.userId,
         repoId: req.params['id'],
-        error: error instanceof Error ? error.message : error 
+        error: error instanceof Error ? error.message : error
       });
       next(error);
     }
@@ -227,10 +290,10 @@ router.get('/repos/:id/data',
       });
 
     } catch (error) {
-      logger.error('Failed to get repository data', { 
+      logger.error('Failed to get repository data', {
         userId: req.user?.userId,
         repoId: req.params['id'],
-        error: error instanceof Error ? error.message : error 
+        error: error instanceof Error ? error.message : error
       });
       next(error);
     }
