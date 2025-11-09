@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, ListTodo, Zap, TrendingUp, Settings, FolderOpen, ChevronDown, Check } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Zap, TrendingUp, Settings, FolderOpen, ChevronDown, Check, Kanban } from 'lucide-react';
 import { cn } from './ui/utils';
 import {
   DropdownMenu,
@@ -30,6 +30,7 @@ export function Sidebar({ activeTab, onTabChange, currentProject, projects = [],
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'backlog', label: 'Backlog', icon: ListTodo },
+    { id: 'board', label: 'Board', icon: Kanban },
     { id: 'sprints', label: 'Sprints', icon: Zap },
     { id: 'insights', label: 'Insights', icon: TrendingUp },
     { id: 'settings', label: 'Settings', icon: Settings },

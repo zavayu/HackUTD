@@ -10,7 +10,7 @@ import {
   handleAISuggestion,
   handleApplyAIChanges,
 } from '../utils/handlers';
-import { WorkspaceTabType, BacklogItem } from '../types';
+import { BacklogItem } from '../types';
 
 export function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -18,7 +18,6 @@ export function ProjectPage() {
   const { theme, themeMode, handleThemeChange, handleThemeModeChange } = useTheme();
 
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTabType>('backlog');
   const [aiCopilotOpen, setAiCopilotOpen] = useState(false);
   const [newStoryModalOpen, setNewStoryModalOpen] = useState(false);
   const [backlogItems, setBacklogItems] = useState<BacklogItem[]>(initialBacklogItems);
@@ -44,7 +43,6 @@ export function ProjectPage() {
   return (
     <ProjectView
       activeTab={activeTab}
-      workspaceTab={workspaceTab}
       aiCopilotOpen={aiCopilotOpen}
       newStoryModalOpen={newStoryModalOpen}
       theme={theme}
@@ -53,7 +51,6 @@ export function ProjectPage() {
       selectedProject={selectedProject}
       projects={projects}
       onTabChange={setActiveTab}
-      onWorkspaceTabChange={setWorkspaceTab}
       onAICopilotToggle={() => setAiCopilotOpen(!aiCopilotOpen)}
       onNewStoryModalToggle={() => setNewStoryModalOpen(!newStoryModalOpen)}
       onThemeChange={handleThemeChange}

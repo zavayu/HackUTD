@@ -22,6 +22,6 @@ export interface Project {
 }
 
 export type ViewType = 'home' | 'login' | 'projects' | 'project';
-export type TabType = 'dashboard' | 'backlog' | 'sprints' | 'insights' | 'settings';
+export type TabType = 'dashboard' | 'backlog' | 'board' | 'sprints' | 'insights' | 'settings';
 export type WorkspaceTabType = 'backlog' | 'board';
 export type ThemeMode = 'light' | 'dark' | 'system';

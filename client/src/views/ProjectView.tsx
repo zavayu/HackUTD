@@ -4,15 +4,15 @@ import { AICopilot } from '../components/AICopilot';
 import { NewStoryModal } from '../components/NewStoryModal';
 import { DashboardView } from './DashboardView';
 import { BacklogView } from './BacklogView';
+import { BoardView } from './BoardView';
 import { SprintsView } from './SprintsView';
 import { InsightsView } from './InsightsView';
 import { SettingsView } from './SettingsView';
 import { Plus } from 'lucide-react';
-import { Project, BacklogItem, TabType, WorkspaceTabType } from '../types';
+import { Project, BacklogItem, TabType } from '../types';
 
 interface ProjectViewProps {
   activeTab: string;
-  workspaceTab: WorkspaceTabType;
   aiCopilotOpen: boolean;
   newStoryModalOpen: boolean;
   theme: string;
@@ -21,7 +21,6 @@ interface ProjectViewProps {
   selectedProject: Project;
   projects: Project[];
   onTabChange: (tab: string) => void;
-  onWorkspaceTabChange: (tab: WorkspaceTabType) => void;
   onAICopilotToggle: () => void;
   onNewStoryModalToggle: () => void;
   onThemeChange: (theme: string) => void;
@@ -37,7 +36,6 @@ interface ProjectViewProps {
 
 export function ProjectView({
   activeTab,
-  workspaceTab,
   aiCopilotOpen,
   newStoryModalOpen,
   theme,
@@ -46,7 +44,6 @@ export function ProjectView({
   selectedProject,
   projects,
   onTabChange,
-  onWorkspaceTabChange,
   onAICopilotToggle,
   onNewStoryModalToggle,
   onThemeChange,
@@ -93,11 +90,17 @@ export function ProjectView({
             {activeTab === 'backlog' && (
               <BacklogView
                 theme={theme}
-                workspaceTab={workspaceTab}
                 backlogItems={backlogItems}
                 onThemeChange={onThemeChange}
-                onWorkspaceTabChange={onWorkspaceTabChange}
                 onAISuggestion={onAISuggestion}
+              />
+            )}
+
+            {activeTab === 'board' && (
+              <BoardView
+                theme={theme}
+                backlogItems={backlogItems}
+                onThemeChange={onThemeChange}
                 onItemMove={onItemMove}
                 onNewStoryClick={onNewStoryModalToggle}
                 onTabChange={onTabChange}
