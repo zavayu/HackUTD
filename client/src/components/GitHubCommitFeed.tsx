@@ -9,11 +9,31 @@ export function GitHubCommitFeed() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date:', dateString);
+      return 'Unknown';
+    }
+    
+    const diffInMs = now.getTime() - date.getTime();
+    
+    // If date is in the future (due to timezone or data issues), show as "Just now"
+    if (diffInMs < 0) {
+      console.warn('Commit date is in the future:', dateString);
+      return 'Just now';
+    }
+    
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
 
-    if (diffInHours < 1) return 'Just now';
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInHours < 24) return `${diffInHours}h ago`;
-    return `${Math.floor(diffInHours / 24)}d ago`;
+    if (diffInDays < 30) return `${diffInDays}d ago`;
+    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)}mo ago`;
+    return `${Math.floor(diffInDays / 365)}y ago`;
   };
 
   const getCommitType = (message: string) => {
