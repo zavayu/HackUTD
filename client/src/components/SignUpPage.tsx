@@ -28,150 +28,326 @@ export function SignUpPage({ onSignUp, loading = false }: SignUpPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem'
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '1200px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+        gap: '3rem',
+        alignItems: 'center'
+      }}>
         {/* Left side - Branding */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center lg:text-left"
-        >
-          <div className="flex items-center gap-3 justify-center lg:justify-start mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-2xl">
-              <Zap className="w-8 h-8 text-white" />
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            justifyContent: 'center',
+            marginBottom: '1.5rem'
+          }}>
+            <div style={{
+              width: '4rem',
+              height: '4rem',
+              borderRadius: '1rem',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}>
+              <Zap style={{ width: '2rem', height: '2rem', color: 'white' }} />
             </div>
-            <h1 className="text-foreground">AI ProductHub</h1>
+            <h1 style={{
+              fontSize: '1.875rem',
+              fontWeight: '700',
+              color: '#1f2937',
+              margin: 0
+            }}>AI ProductHub</h1>
           </div>
           
-          <h2 className="mb-4 text-foreground">
+          <h2 style={{
+            fontSize: '2.25rem',
+            fontWeight: '700',
+            marginBottom: '1rem',
+            color: '#1f2937',
+            lineHeight: '1.2'
+          }}>
             Start Building Better Products Today
           </h2>
           
-          <p className="text-muted-foreground mb-8 max-w-lg">
+          <p style={{
+            color: '#6b7280',
+            marginBottom: '2rem',
+            fontSize: '1.125rem',
+            lineHeight: '1.6',
+            maxWidth: '32rem',
+            margin: '0 auto 2rem auto'
+          }}>
             Join thousands of product teams using AI-powered tools to streamline
             their workflow and deliver exceptional results.
           </p>
 
-          <div className="space-y-4 mb-8">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <h4 className="text-foreground mb-1">AI-Powered Story Generation</h4>
-                <p className="text-sm text-muted-foreground">
-                  Generate detailed user stories with acceptance criteria automatically
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <h4 className="text-foreground mb-1">Smart Insights & Analytics</h4>
-                <p className="text-sm text-muted-foreground">
-                  Real-time dashboards with AI-driven recommendations
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <FolderKanban className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <h4 className="text-foreground mb-1">Seamless Workflow</h4>
-                <p className="text-sm text-muted-foreground">
-                  Backlog, boards, and sprint planning in one beautiful interface
-                </p>
-              </div>
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{
+              background: '#dbeafe',
+              border: '1px solid #bfdbfe',
+              borderRadius: '1rem',
+              padding: '1.5rem',
+              maxWidth: '24rem',
+              margin: '0 auto'
+            }}>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#1f2937',
+                marginBottom: '0.5rem',
+                margin: 0
+              }}>
+                <span style={{ fontWeight: '600' }}>Free for 14 days.</span> No credit card required.
+              </p>
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#6b7280',
+                margin: 0
+              }}>
+                Start with our Pro plan and upgrade anytime
+              </p>
             </div>
           </div>
-
-          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6">
-            <p className="text-sm text-foreground mb-2">
-              <span className="font-semibold">Free for 14 days.</span> No credit card required.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Start with our Pro plan and upgrade anytime
-            </p>
-          </div>
-        </motion.div>
+        </div>
 
         {/* Right side - Sign Up Form */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="bg-card border border-border rounded-3xl p-8 shadow-2xl">
-            <h3 className="mb-2 text-foreground">Create your account</h3>
-            <p className="text-muted-foreground mb-6">Get started with AI ProductHub today</p>
+        <div>
+          <div style={{
+            background: 'white',
+            border: '1px solid #e5e7eb',
+            borderRadius: '1.5rem',
+            padding: '2rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
+            <h3 style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              marginBottom: '0.5rem',
+              color: '#1f2937'
+            }}>Create your account</h3>
+            <p style={{
+              color: '#6b7280',
+              marginBottom: '1.5rem'
+            }}>Get started with AI ProductHub today</p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm text-foreground mb-2">Full Name</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '0.5rem'
+                }}>Full Name</label>
+                <div style={{ position: 'relative' }}>
+                  <User style={{
+                    position: 'absolute',
+                    left: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '1.25rem',
+                    height: '1.25rem',
+                    color: '#9ca3af'
+                  }} />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-input-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                    placeholder="Sarah Chen"
+                    style={{
+                      width: '100%',
+                      paddingLeft: '2.75rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.75rem',
+                      paddingBottom: '0.75rem',
+                      background: 'white',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.75rem',
+                      fontSize: '1rem',
+                      color: '#1f2937',
+                      outline: 'none',
+                      transition: 'all 0.2s'
+                    }}
+                    placeholder="Enter your full name"
                     required
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#3b82f6';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm text-foreground mb-2">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '0.5rem'
+                }}>Email</label>
+                <div style={{ position: 'relative' }}>
+                  <Mail style={{
+                    position: 'absolute',
+                    left: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '1.25rem',
+                    height: '1.25rem',
+                    color: '#9ca3af'
+                  }} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-input-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    style={{
+                      width: '100%',
+                      paddingLeft: '2.75rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.75rem',
+                      paddingBottom: '0.75rem',
+                      background: 'white',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.75rem',
+                      fontSize: '1rem',
+                      color: '#1f2937',
+                      outline: 'none',
+                      transition: 'all 0.2s'
+                    }}
                     placeholder="you@example.com"
                     required
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#3b82f6';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm text-foreground mb-2">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '0.5rem'
+                }}>Password</label>
+                <div style={{ position: 'relative' }}>
+                  <Lock style={{
+                    position: 'absolute',
+                    left: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '1.25rem',
+                    height: '1.25rem',
+                    color: '#9ca3af'
+                  }} />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-input-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                    placeholder="••••••••"
+                    style={{
+                      width: '100%',
+                      paddingLeft: '2.75rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.75rem',
+                      paddingBottom: '0.75rem',
+                      background: 'white',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.75rem',
+                      fontSize: '1rem',
+                      color: '#1f2937',
+                      outline: 'none',
+                      transition: 'all 0.2s'
+                    }}
+                    placeholder="Enter your password"
                     required
                     minLength={8}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#3b82f6';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p style={{
+                  fontSize: '0.75rem',
+                  color: '#6b7280',
+                  marginTop: '0.25rem'
+                }}>
                   Must be at least 8 characters
                 </p>
               </div>
 
-              <div>
-                <label className="block text-sm text-foreground mb-2">Confirm Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '0.5rem'
+                }}>Confirm Password</label>
+                <div style={{ position: 'relative' }}>
+                  <Lock style={{
+                    position: 'absolute',
+                    left: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '1.25rem',
+                    height: '1.25rem',
+                    color: '#9ca3af'
+                  }} />
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-input-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                    placeholder="••••••••"
+                    style={{
+                      width: '100%',
+                      paddingLeft: '2.75rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.75rem',
+                      paddingBottom: '0.75rem',
+                      background: 'white',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.75rem',
+                      fontSize: '1rem',
+                      color: '#1f2937',
+                      outline: 'none',
+                      transition: 'all 0.2s'
+                    }}
+                    placeholder="Confirm your password"
                     required
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#3b82f6';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
@@ -179,42 +355,118 @@ export function SignUpPage({ onSignUp, loading = false }: SignUpPageProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  width: '100%',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                  color: 'white',
+                  padding: '0.75rem',
+                  borderRadius: '0.75rem',
+                  border: 'none',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.5 : 1,
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.target.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.boxShadow = 'none';
+                }}
               >
                 {loading ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div style={{
+                      width: '1.25rem',
+                      height: '1.25rem',
+                      border: '2px solid white',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
                     Creating Account...
                   </>
                 ) : (
                   <>
                     Create Account
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight style={{ width: '1.25rem', height: '1.25rem' }} />
                   </>
                 )}
               </button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
+            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280'
+              }}>
                 Already have an account?{' '}
-                <Link to="/login" className="text-primary hover:underline">
+                <Link 
+                  to="/login" 
+                  style={{
+                    color: '#2563eb',
+                    fontWeight: '500',
+                    textDecoration: 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.textDecoration = 'underline';
+                    e.target.style.color = '#1d4ed8';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.textDecoration = 'none';
+                    e.target.style.color = '#2563eb';
+                  }}
+                >
                   Sign in
                 </Link>
               </p>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-border">
-              <p className="text-xs text-muted-foreground text-center">
+            <div style={{
+              marginTop: '1.5rem',
+              paddingTop: '1.5rem',
+              borderTop: '1px solid #e5e7eb'
+            }}>
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#6b7280',
+                textAlign: 'center'
+              }}>
                 By creating an account, you agree to our{' '}
-                <button className="text-primary hover:underline">Terms of Service</button>
+                <button style={{
+                  color: '#2563eb',
+                  background: 'none',
+                  border: 'none',
+                  textDecoration: 'underline',
+                  cursor: 'pointer'
+                }}>Terms of Service</button>
                 {' '}and{' '}
-                <button className="text-primary hover:underline">Privacy Policy</button>
+                <button style={{
+                  color: '#2563eb',
+                  background: 'none',
+                  border: 'none',
+                  textDecoration: 'underline',
+                  cursor: 'pointer'
+                }}>Privacy Policy</button>
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
