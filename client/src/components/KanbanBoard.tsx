@@ -8,11 +8,17 @@ import { motion, AnimatePresence } from 'motion/react';
 interface KanbanBoardProps {
   items: BacklogItem[];
   onItemMove: (itemId: string, newStatus: string) => void;
+  onEdit?: (item: BacklogItem) => void;
+  onAssign?: (item: BacklogItem) => void;
+  onDelete?: (itemId: string) => void;
 }
 
 interface DraggableCardProps {
   item: BacklogItem;
   status: string;
+  onEdit?: (item: BacklogItem) => void;
+  onAssign?: (item: BacklogItem) => void;
+  onDelete?: (itemId: string) => void;
 }
 
 interface ColumnProps {
@@ -20,13 +26,16 @@ interface ColumnProps {
   status: string;
   items: BacklogItem[];
   onDrop: (itemId: string, status: string) => void;
+  onEdit?: (item: BacklogItem) => void;
+  onAssign?: (item: BacklogItem) => void;
+  onDelete?: (itemId: string) => void;
 }
 
 const ItemTypes = {
   CARD: 'card',
 };
 
-function DraggableCard({ item, status }: DraggableCardProps) {
+function DraggableCard({ item, status, onEdit, onAssign, onDelete }: DraggableCardProps) {
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.CARD,
     item: { id: item.id, status },
@@ -41,12 +50,17 @@ function DraggableCard({ item, status }: DraggableCardProps) {
       style={{ opacity: isDragging ? 0.5 : 1 }}
       className="cursor-move"
     >
-      <BacklogCard item={item} />
+      <BacklogCard 
+        item={item}
+        onEdit={onEdit}
+        onAssign={onAssign}
+        onDelete={onDelete}
+      />
     </div>
   );
 }
 
-function Column({ title, status, items, onDrop }: ColumnProps) {
+function Column({ title, status, items, onDrop, onEdit, onAssign, onDelete }: ColumnProps) {
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.CARD,
     drop: (item: { id: string; status: string }) => {
@@ -74,14 +88,21 @@ function Column({ title, status, items, onDrop }: ColumnProps) {
       </div>
       <div className="space-y-3">
         {items.map((item) => (
-          <DraggableCard key={item.id} item={item} status={status} />
+          <DraggableCard 
+            key={item.id} 
+            item={item} 
+            status={status}
+            onEdit={onEdit}
+            onAssign={onAssign}
+            onDelete={onDelete}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-export function KanbanBoard({ items, onItemMove }: KanbanBoardProps) {
+export function KanbanBoard({ items, onItemMove, onEdit, onAssign, onDelete }: KanbanBoardProps) {
   const [showAIPopup, setShowAIPopup] = useState(true);
 
   const columns = [
@@ -168,6 +189,9 @@ export function KanbanBoard({ items, onItemMove }: KanbanBoardProps) {
               status={column.status}
               items={getItemsByStatus(column.status)}
               onDrop={onItemMove}
+              onEdit={onEdit}
+              onAssign={onAssign}
+              onDelete={onDelete}
             />
           ))}
         </div>

@@ -5,6 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 export interface Issue {
   _id: string;
   projectId: string;
+  sprintId?: string;
   title: string;
   description: string;
   type: 'story' | 'task' | 'bug';

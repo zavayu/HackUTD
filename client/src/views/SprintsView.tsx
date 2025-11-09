@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BacklogCard, BacklogItem } from '../components/BacklogCard';
+import { EditStoryModal } from '../components/EditStoryModal';
+import { AssignMemberModal } from '../components/AssignMemberModal';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { Plus, Play, CheckCircle, Calendar, Target, TrendingUp } from 'lucide-react';
+import { Plus, Play, CheckCircle, Target } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ProjectMember } from '../types';
 
 interface Sprint {
   _id: string;
@@ -23,12 +26,17 @@ interface SprintsViewProps {
   backlogItems: BacklogItem[];
   sprints: Sprint[];
   activeSprint: Sprint | null;
+  members: ProjectMember[];
+  ownerEmail: string;
   onThemeChange: (theme: string) => void;
   onCreateSprint: () => void;
   onStartSprint: (sprintId: string) => void;
   onCompleteSprint: (sprintId: string) => void;
   onAddIssuesToSprint: (sprintId: string, issueIds: string[]) => void;
   onRemoveIssueFromSprint: (sprintId: string, issueId: string) => void;
+  onEditStory: (storyId: string, updates: any) => void;
+  onAssignStory: (storyId: string, assignee: string) => void;
+  onDeleteStory: (storyId: string) => void;
 }
 
 export function SprintsView({ 
@@ -36,23 +44,32 @@ export function SprintsView({
   backlogItems = [], 
   sprints = [],
   activeSprint,
+  members = [],
+  ownerEmail,
   onThemeChange,
   onCreateSprint,
   onStartSprint,
   onCompleteSprint,
   onAddIssuesToSprint,
   onRemoveIssueFromSprint,
+  onEditStory,
+  onAssignStory,
+  onDeleteStory,
 }: SprintsViewProps) {
   const [selectedSprint, setSelectedSprint] = useState<string | null>(
     activeSprint?._id || null
   );
   const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
+  const [editingStory, setEditingStory] = useState<BacklogItem | null>(null);
+  const [assigningStory, setAssigningStory] = useState<BacklogItem | null>(null);
 
   // Get backlog items (not in any sprint)
   const backlogOnlyItems = backlogItems.filter(item => item.status === 'backlog');
   
-  // Get items in selected sprint
-  const sprintItems = backlogItems.filter(item => item.status !== 'backlog');
+  // Get items in selected sprint only
+  const sprintItems = selectedSprint 
+    ? backlogItems.filter(item => item.sprintId === selectedSprint)
+    : [];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', { 
@@ -199,7 +216,13 @@ export function SprintsView({
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {sprintItems.map((item) => (
-                      <BacklogCard key={item.id} item={item} />
+                      <BacklogCard 
+                        key={item.id} 
+                        item={item}
+                        onEdit={(item) => setEditingStory(item)}
+                        onAssign={(item) => setAssigningStory(item)}
+                        onDelete={onDeleteStory}
+                      />
                     ))}
                   </div>
                 )}
@@ -234,7 +257,12 @@ export function SprintsView({
                             : ''
                         }`}
                       >
-                        <BacklogCard item={item} />
+                        <BacklogCard 
+                          item={item}
+                          onEdit={(item) => setEditingStory(item)}
+                          onAssign={(item) => setAssigningStory(item)}
+                          onDelete={onDeleteStory}
+                        />
                       </div>
                     ))}
                   </div>
@@ -252,6 +280,22 @@ export function SprintsView({
           )}
         </div>
       </div>
+
+      <EditStoryModal
+        isOpen={!!editingStory}
+        story={editingStory}
+        onClose={() => setEditingStory(null)}
+        onSave={onEditStory}
+      />
+
+      <AssignMemberModal
+        isOpen={!!assigningStory}
+        story={assigningStory}
+        members={members}
+        ownerEmail={ownerEmail}
+        onClose={() => setAssigningStory(null)}
+        onAssign={onAssignStory}
+      />
     </div>
   );
 }

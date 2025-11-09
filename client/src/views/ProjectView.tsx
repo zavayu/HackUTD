@@ -56,6 +56,9 @@ interface ProjectViewProps {
   onRemoveIssueFromSprint: (sprintId: string, issueId: string) => void;
   onAddMember: (email: string, role: 'admin' | 'member') => void;
   onRemoveMember: (email: string) => void;
+  onEditStory: (storyId: string, updates: any) => void;
+  onAssignStory: (storyId: string, assignee: string) => void;
+  onDeleteStory: (storyId: string) => void;
 }
 
 export function ProjectView({
@@ -89,6 +92,9 @@ export function ProjectView({
   onRemoveIssueFromSprint,
   onAddMember,
   onRemoveMember,
+  onEditStory,
+  onAssignStory,
+  onDeleteStory,
 }: ProjectViewProps) {
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -129,8 +135,13 @@ export function ProjectView({
               <BacklogView
                 theme={theme}
                 backlogItems={backlogItems}
+                members={selectedProject.members || []}
+                ownerEmail={ownerEmail}
                 onThemeChange={onThemeChange}
                 onAISuggestion={onAISuggestion}
+                onEditStory={onEditStory}
+                onAssignStory={onAssignStory}
+                onDeleteStory={onDeleteStory}
               />
             )}
 
@@ -138,10 +149,15 @@ export function ProjectView({
               <BoardView
                 theme={theme}
                 backlogItems={backlogItems}
+                members={selectedProject.members || []}
+                ownerEmail={ownerEmail}
                 onThemeChange={onThemeChange}
                 onItemMove={onItemMove}
                 onNewStoryClick={onNewStoryModalToggle}
                 onTabChange={onTabChange}
+                onEditStory={onEditStory}
+                onAssignStory={onAssignStory}
+                onDeleteStory={onDeleteStory}
                 activeSprint={activeSprint}
               />
             )}
@@ -152,12 +168,17 @@ export function ProjectView({
                 backlogItems={backlogItems}
                 sprints={sprints}
                 activeSprint={activeSprint}
+                members={selectedProject.members || []}
+                ownerEmail={ownerEmail}
                 onThemeChange={onThemeChange}
                 onCreateSprint={onCreateSprint}
                 onStartSprint={onStartSprint}
                 onCompleteSprint={onCompleteSprint}
                 onAddIssuesToSprint={onAddIssuesToSprint}
                 onRemoveIssueFromSprint={onRemoveIssueFromSprint}
+                onEditStory={onEditStory}
+                onAssignStory={onAssignStory}
+                onDeleteStory={onDeleteStory}
               />
             )}
 
