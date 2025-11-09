@@ -209,7 +209,7 @@ const ENCRYPTION_KEY = process.env['ENCRYPTION_KEY'] || 'default-key-for-develop
 GitHubRepoSchema.methods['encryptAccessToken'] = function(token: string): string {
   const iv = crypto.randomBytes(16);
   const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
-  const cipher = crypto.createCipher('aes-256-cbc', key);
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
   
   let encrypted = cipher.update(token, 'utf8', 'hex');
   encrypted += cipher.final('hex');
@@ -226,11 +226,11 @@ GitHubRepoSchema.methods['decryptAccessToken'] = function(): string {
     throw new Error('Invalid encrypted token format');
   }
   
-  const iv = Buffer.from(parts[0], 'hex');
-  const encrypted = parts[1];
+  const iv = Buffer.from(parts[0]!, 'hex');
+  const encrypted = parts[1]!;
   
   const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
-  const decipher = crypto.createDecipher('aes-256-cbc', key);
+  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');

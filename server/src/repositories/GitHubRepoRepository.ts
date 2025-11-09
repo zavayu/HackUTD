@@ -35,6 +35,9 @@ export class GitHubRepoRepository {
       const repo = new GitHubRepo(repoData);
       return await repo.save();
     } catch (error: any) {
+      // Log the actual error for debugging
+      console.error('GitHubRepo creation error:', error);
+      
       // Handle duplicate fullName constraint
       if (error.code === 11000 && error.keyPattern?.fullName) {
         throw new AppError(400, 'DUPLICATE_REPO', 'Repository is already connected');
@@ -43,10 +46,10 @@ export class GitHubRepoRepository {
       // Handle validation errors
       if (error.name === 'ValidationError') {
         const messages = Object.values(error.errors).map((err: any) => err.message);
-        throw new AppError(400, 'VALIDATION_ERROR', 'Repository validation failed', messages);
+        throw new AppError(400, 'VALIDATION_ERROR', `Repository validation failed: ${messages.join(', ')}`);
       }
       
-      throw new AppError(500, 'DATABASE_ERROR', 'Failed to create repository connection');
+      throw new AppError(500, 'DATABASE_ERROR', `Failed to create repository connection: ${error.message}`);
     }
   }
 
