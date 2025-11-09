@@ -86,18 +86,27 @@ export function KanbanBoard({ items, onItemMove }: KanbanBoardProps) {
 
   const columns = [
     { title: 'To Do', status: 'todo' },
-    { title: 'In Progress', status: 'in-progress' },
+    { title: 'In Progress', status: 'in_progress' },
     { title: 'Done', status: 'done' },
   ];
 
   const getItemsByStatus = (status: string) => {
-    if (status === 'todo') {
-      return items.filter((item) => item.progress === 0);
-    } else if (status === 'in-progress') {
-      return items.filter((item) => item.progress > 0 && item.progress < 100);
-    } else {
-      return items.filter((item) => item.progress === 100);
-    }
+    // Filter by status field, fallback to progress for backward compatibility
+    return items.filter((item) => {
+      if (item.status) {
+        // Use status field if available
+        return item.status === status;
+      } else {
+        // Fallback to progress-based filtering
+        if (status === 'todo') {
+          return item.progress === 0;
+        } else if (status === 'in_progress') {
+          return item.progress > 0 && item.progress < 100;
+        } else {
+          return item.progress === 100;
+        }
+      }
+    });
   };
 
   // Check for blocked tasks (in progress > 50% for demo)

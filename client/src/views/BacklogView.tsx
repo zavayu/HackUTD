@@ -16,6 +16,9 @@ export function BacklogView({
   onThemeChange,
   onAISuggestion,
 }: BacklogViewProps) {
+  // Filter to only show items in backlog status (not assigned to any sprint)
+  const backlogOnlyItems = backlogItems.filter(item => item.status === 'backlog');
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
@@ -30,18 +33,24 @@ export function BacklogView({
 
       <div className="space-y-4">
         <BacklogFilters onAISuggestion={onAISuggestion} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {backlogItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <BacklogCard item={item} />
-            </motion.div>
-          ))}
-        </div>
+        {backlogOnlyItems.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No items in backlog. Create a new story to get started!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {backlogOnlyItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <BacklogCard item={item} />
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

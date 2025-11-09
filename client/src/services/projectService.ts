@@ -92,6 +92,27 @@ class ProjectService {
       method: 'DELETE',
     });
   }
+
+  async getMembers(projectId: string): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/projects/${projectId}/members`);
+  }
+
+  async addMember(
+    projectId: string,
+    email: string,
+    role: 'admin' | 'member'
+  ): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/projects/${projectId}/members`, {
+      method: 'POST',
+      body: JSON.stringify({ email, role }),
+    });
+  }
+
+  async removeMember(projectId: string, email: string): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/projects/${projectId}/members/${encodeURIComponent(email)}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export const projectService = new ProjectService();

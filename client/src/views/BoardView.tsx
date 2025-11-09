@@ -10,6 +10,12 @@ interface BoardViewProps {
   onItemMove: (itemId: string, newStatus: string) => void;
   onNewStoryClick: () => void;
   onTabChange: (tab: string) => void;
+  activeSprint?: {
+    name: string;
+    goal: string;
+    startDate: string;
+    endDate: string;
+  } | null;
 }
 
 export function BoardView({
@@ -19,21 +25,58 @@ export function BoardView({
   onItemMove,
   onNewStoryClick,
   onTabChange,
+  activeSprint,
 }: BoardViewProps) {
+  // Filter to only show items that are NOT in backlog status (i.e., in a sprint)
+  const sprintItems = backlogItems.filter(item => item.status !== 'backlog');
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="mb-2">Board</h1>
+          <h1 className="mb-2">
+            {activeSprint ? activeSprint.name : 'Board'}
+          </h1>
           <p className="text-muted-foreground">
-            Visualize and manage your work with a kanban board
+            {activeSprint 
+              ? activeSprint.goal
+              : 'Visualize and manage your work with a kanban board'
+            }
           </p>
         </div>
         <ThemeToggle theme={theme} onThemeChange={onThemeChange} />
       </div>
 
       <div className="space-y-6">
-        <KanbanBoard items={backlogItems} onItemMove={onItemMove} />
+        {!activeSprint ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <h3 className="mb-2">No Active Sprint</h3>
+            <p className="text-muted-foreground mb-6">
+              Start a sprint to see your board. Go to the Sprints tab to create and activate a sprint.
+            </p>
+            <button
+              onClick={() => onTabChange('sprints')}
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Go to Sprints
+            </button>
+          </div>
+        ) : sprintItems.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <h3 className="mb-2">Sprint is Empty</h3>
+            <p className="text-muted-foreground mb-6">
+              Add stories from your backlog to this sprint to get started.
+            </p>
+            <button
+              onClick={() => onTabChange('sprints')}
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Plan Sprint
+            </button>
+          </div>
+        ) : (
+          <KanbanBoard items={sprintItems} onItemMove={onItemMove} />
+        )}
         
         <div className="max-w-4xl mx-auto mt-8">
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 rounded-2xl p-8 text-center border border-border">

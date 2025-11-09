@@ -5,6 +5,13 @@ export interface IProject extends Document {
   name: string;
   description: string;
   status: 'active' | 'archived';
+  members: Array<{
+    userId: mongoose.Types.ObjectId;
+    email: string;
+    name: string;
+    role: 'owner' | 'admin' | 'member';
+    addedAt: Date;
+  }>;
   connectedRepos: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +43,32 @@ const ProjectSchema = new Schema<IProject>({
     },
     default: 'active'
   },
+  members: [{
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    role: {
+      type: String,
+      enum: ['owner', 'admin', 'member'],
+      default: 'member'
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   connectedRepos: [{
     type: Schema.Types.ObjectId,
     ref: 'GitHubRepo'

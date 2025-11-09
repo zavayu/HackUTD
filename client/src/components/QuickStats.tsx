@@ -1,6 +1,14 @@
 import { Users, Target, Zap, Trophy } from 'lucide-react';
+import { Project } from '../types';
 
-export function QuickStats() {
+interface QuickStatsProps {
+  project: Project;
+  onManageTeam?: () => void;
+}
+
+export function QuickStats({ project, onManageTeam }: QuickStatsProps) {
+  const memberCount = (project.members?.length || 0) + 1; // +1 for owner
+  
   const stats = [
     {
       label: 'Team Velocity',
@@ -18,15 +26,16 @@ export function QuickStats() {
     },
     {
       label: 'Team Members',
-      value: '5',
+      value: memberCount.toString(),
       change: 'All active',
       trend: 'neutral',
       icon: Users,
+      onClick: onManageTeam,
     },
     {
       label: 'Completed Stories',
-      value: '13',
-      change: 'This sprint',
+      value: project.stats?.stories.toString() || '0',
+      change: 'Total stories',
       trend: 'neutral',
       icon: Trophy,
     },
@@ -39,7 +48,10 @@ export function QuickStats() {
         return (
           <div
             key={index}
-            className="bg-gradient-to-br from-accent/30 to-accent/10 border border-border rounded-xl p-4 hover:shadow-md transition-all"
+            onClick={stat.onClick}
+            className={`bg-gradient-to-br from-accent/30 to-accent/10 border border-border rounded-xl p-4 hover:shadow-md transition-all ${
+              stat.onClick ? 'cursor-pointer hover:border-primary/50' : ''
+            }`}
           >
             <div className="flex items-center justify-between mb-2">
               <Icon className="w-5 h-5 text-primary" />

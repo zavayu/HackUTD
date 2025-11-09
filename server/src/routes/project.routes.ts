@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { Project } from '../models/Project';
 import { Issue } from '../models/Issue';
 import { authMiddleware } from '../middleware/auth.middleware';
@@ -26,10 +27,11 @@ router.get('/', async (req: Request, res: Response) => {
           name: project.name,
           description: project.description,
           status: project.status,
+          members: project.members || [],
           stats: {
             stories: storyCount,
-            sprints: 0, // TODO: Add sprint count when sprints are implemented
-            members: 1, // TODO: Add team members when implemented
+            sprints: 0,
+            members: (project.members?.length || 0) + 1, // +1 for owner
           },
           createdAt: project.createdAt,
           updatedAt: project.updatedAt,
@@ -75,10 +77,11 @@ router.get('/:projectId', async (req: Request, res: Response) => {
         name: project.name,
         description: project.description,
         status: project.status,
+        members: project.members || [],
         stats: {
           stories: storyCount,
           sprints: 0,
-          members: 1,
+          members: (project.members?.length || 0) + 1,
         },
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,
@@ -220,6 +223,154 @@ router.delete('/:projectId', async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to delete project',
+      error: error.message,
+    });
+  }
+});
+
+// Get project members
+router.get('/:projectId/members', async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { projectId } = req.params;
+
+    const project = await Project.findOne({ _id: projectId, userId });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      members: project.members || [],
+    });
+  } catch (error: any) {
+    console.error('Get members error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch members',
+      error: error.message,
+    });
+  }
+});
+
+// Add member to project
+router.post('/:projectId/members', async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { projectId } = req.params;
+    const { email, role } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required',
+      });
+    }
+
+    const project = await Project.findOne({ _id: projectId, userId });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found',
+      });
+    }
+
+    // Check if member already exists
+    const existingMember = project.members?.find(m => m.email === email);
+    if (existingMember) {
+      return res.status(409).json({
+        success: false,
+        message: 'Member already exists in project',
+      });
+    }
+
+    // Look up user by email
+    const User = mongoose.model('User');
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User with this email not found',
+      });
+    }
+
+    const newMember = {
+      userId: user._id,
+      email: user.email,
+      name: user.name,
+      role: role || 'member',
+      addedAt: new Date(),
+    };
+
+    if (!project.members) {
+      project.members = [];
+    }
+    project.members.push(newMember);
+    await project.save();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Member added successfully',
+      member: newMember,
+    });
+  } catch (error: any) {
+    console.error('Add member error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to add member',
+      error: error.message,
+    });
+  }
+});
+
+// Remove member from project
+router.delete('/:projectId/members/:memberEmail', async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { projectId, memberEmail } = req.params;
+
+    const project = await Project.findOne({ _id: projectId, userId });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found',
+      });
+    }
+
+    if (!project.members) {
+      return res.status(404).json({
+        success: false,
+        message: 'Member not found',
+      });
+    }
+
+    const memberIndex = project.members.findIndex(m => m.email === memberEmail);
+    if (memberIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Member not found',
+      });
+    }
+
+    project.members.splice(memberIndex, 1);
+    await project.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Member removed successfully',
+    });
+  } catch (error: any) {
+    console.error('Remove member error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to remove member',
       error: error.message,
     });
   }
