@@ -111,7 +111,7 @@ export function GitHubConnectionModal({ isOpen, onClose }: GitHubConnectionModal
     }
   };
 
-  const handleSelectRepo = (repo: GitHubRepoFromAPI) => {
+  const handleSelectRepo = async (repo: GitHubRepoFromAPI) => {
     // Convert API repo to GitHubContext format
     const contextRepo = {
       id: repo.repoId,
@@ -125,10 +125,21 @@ export function GitHubConnectionModal({ isOpen, onClose }: GitHubConnectionModal
       open_issues: 0,
     };
     
-    connectGitHub(contextRepo);
-    toast.success('Repository Selected', {
-      description: `Now using ${repo.repoFullName}`,
-    });
+    // Connect with the MongoDB _id for fetching data
+    connectGitHub(contextRepo, repo._id);
+    
+    // Trigger sync in the background
+    try {
+      await api.syncGitHubRepoData(repo._id);
+      toast.success('Repository Selected & Syncing', {
+        description: `Now using ${repo.repoFullName}. Data is being synced...`,
+      });
+    } catch (error) {
+      toast.success('Repository Selected', {
+        description: `Now using ${repo.repoFullName}`,
+      });
+    }
+    
     onClose();
   };
 

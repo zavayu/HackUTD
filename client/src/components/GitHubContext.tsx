@@ -50,7 +50,7 @@ interface GitHubContextType {
   commits: GitHubCommit[];
   pullRequests: GitHubPR[];
   metrics: GitHubMetrics | null;
-  connectGitHub: (repo: GitHubRepo) => void;
+  connectGitHub: (repo: GitHubRepo, repoId?: string) => void;
   disconnectGitHub: () => void;
   refreshData: () => void;
 }
@@ -197,6 +197,7 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
   const [commits, setCommits] = useState<GitHubCommit[]>([]);
   const [pullRequests, setPullRequests] = useState<GitHubPR[]>([]);
   const [metrics, setMetrics] = useState<GitHubMetrics | null>(null);
+  const [repoId, setRepoId] = useState<string | null>(null);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -205,43 +206,123 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
       const data = JSON.parse(savedConnection);
       setIsConnected(true);
       setSelectedRepo(data.repo);
+      setRepoId(data.repoId);
+      
+      // Fetch real data if we have a repoId
+      if (data.repoId) {
+        fetchRepoData(data.repoId);
+      } else {
+        // Fallback to mock data
+        setCommits(mockCommits);
+        setPullRequests(mockPullRequests);
+        setMetrics(mockMetrics);
+      }
+    }
+  }, []);
+
+  const fetchRepoData = async (id: string) => {
+    try {
+      const { api } = await import('../services/api');
+      const response = await api.getGitHubRepoData(id);
+      
+      if (response.success && response.data) {
+        const data = response.data;
+        
+        // Transform commits
+        if (data.commits) {
+          setCommits(data.commits.map((c: any) => ({
+            sha: c.sha,
+            message: c.message,
+            author: c.author,
+            date: c.date,
+            additions: c.additions || 0,
+            deletions: c.deletions || 0,
+          })));
+        }
+        
+        // Transform pull requests
+        if (data.pullRequests) {
+          setPullRequests(data.pullRequests.map((pr: any) => ({
+            id: pr.number,
+            number: pr.number,
+            title: pr.title,
+            author: pr.author,
+            state: pr.state,
+            created_at: pr.createdAt,
+            labels: pr.labels || [],
+            reviews: pr.reviews || 0,
+          })));
+        }
+        
+        // Calculate metrics
+        const totalCommits = data.commits?.length || 0;
+        const totalPRs = data.pullRequests?.length || 0;
+        const openPRs = data.pullRequests?.filter((pr: any) => pr.state === 'open').length || 0;
+        const mergedPRs = data.pullRequests?.filter((pr: any) => pr.state === 'merged').length || 0;
+        
+        setMetrics({
+          totalCommits,
+          totalPRs,
+          openPRs,
+          mergedPRs,
+          avgReviewTime: 4.2, // TODO: Calculate from actual data
+          codeChurn: 18, // TODO: Calculate from actual data
+          activeContributors: new Set(data.commits?.map((c: any) => c.author)).size || 0,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch repo data:', error);
+      // Fallback to mock data
       setCommits(mockCommits);
       setPullRequests(mockPullRequests);
       setMetrics(mockMetrics);
     }
-  }, []);
+  };
 
-  const connectGitHub = (repo: GitHubRepo) => {
+  const connectGitHub = (repo: GitHubRepo, id?: string) => {
     setIsConnected(true);
     setSelectedRepo(repo);
-    setCommits(mockCommits);
-    setPullRequests(mockPullRequests);
-    setMetrics(mockMetrics);
+    setRepoId(id || null);
 
     // Save to localStorage
     localStorage.setItem(
       'github_connection',
       JSON.stringify({
         repo,
+        repoId: id,
         timestamp: new Date().toISOString(),
       })
     );
+    
+    // Fetch real data if we have a repoId
+    if (id) {
+      fetchRepoData(id);
+    } else {
+      setCommits(mockCommits);
+      setPullRequests(mockPullRequests);
+      setMetrics(mockMetrics);
+    }
   };
 
   const disconnectGitHub = () => {
     setIsConnected(false);
     setSelectedRepo(null);
+    setRepoId(null);
     setCommits([]);
     setPullRequests([]);
     setMetrics(null);
     localStorage.removeItem('github_connection');
   };
 
-  const refreshData = () => {
-    // Simulate data refresh
-    setCommits(mockCommits);
-    setPullRequests(mockPullRequests);
-    setMetrics(mockMetrics);
+  const refreshData = async () => {
+    if (repoId) {
+      await fetchRepoData(repoId);
+    } else {
+      // Fallback to mock data
+      setCommits(mockCommits);
+      setPullRequests(mockPullRequests);
+      setMetrics(mockMetrics);
+    }
   };
 
   return (

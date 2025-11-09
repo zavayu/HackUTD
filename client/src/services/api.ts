@@ -121,4 +121,22 @@ export const api = {
     
     return response.json();
   },
+
+  // Sync repository data
+  syncGitHubRepoData: async (repoId: string) => {
+    const token = api.getToken();
+    const response = await fetch(`${API_URL}/github/repos/${repoId}/sync`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to sync repository data');
+    }
+    
+    return response.json();
+  },
 };
