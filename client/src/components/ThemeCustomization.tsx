@@ -14,7 +14,7 @@ export function ThemeCustomization({ currentTheme, onThemeChange, currentMode, o
     {
       id: 'theme-blue',
       name: 'Ocean Blue',
-      description: 'Professional and calm',
+      description: '',
       colors: {
         light: {
           primary: '#2563eb',
@@ -31,7 +31,7 @@ export function ThemeCustomization({ currentTheme, onThemeChange, currentMode, o
     {
       id: 'theme-teal',
       name: 'Teal Fresh',
-      description: 'Modern and energetic',
+      description: '',
       colors: {
         light: {
           primary: '#0d9488',
@@ -48,7 +48,7 @@ export function ThemeCustomization({ currentTheme, onThemeChange, currentMode, o
     {
       id: 'theme-purple',
       name: 'Royal Purple',
-      description: 'Creative and bold',
+      description: '',
       colors: {
         light: {
           primary: '#7c3aed',
@@ -187,13 +187,6 @@ export function ThemeCustomization({ currentTheme, onThemeChange, currentMode, o
             );
           })}
         </div>
-      </div>
-
-      {/* Apply Button */}
-      <div className="flex justify-end">
-        <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
-          Apply Theme
-        </button>
       </div>
     </div>
   );
