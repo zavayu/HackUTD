@@ -88,7 +88,7 @@ export class GitHubService {
     
     const params = {
       since: sinceDate.toISOString(),
-      per_page: 30 // Reduced to 30 since we'll fetch details for each
+      per_page: 50 // Fetch up to 50 commits
     };
 
     logger.info('Fetching GitHub commits', { 

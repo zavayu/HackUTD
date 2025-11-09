@@ -41,14 +41,14 @@ export function SprintBurndown({ activeSprint, backlogItems }: SprintBurndownPro
   const completionPercentage = totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0;
 
   // Generate burndown data
-  const burndownData = [];
+  const burndownData: Array<{ day: string; ideal: number; actual: number | null }> = [];
   for (let i = 0; i <= totalDays; i++) {
     const idealRemaining = totalPoints - (totalPoints / totalDays) * i;
     const actualRemaining = i <= daysElapsed ? totalPoints - (completedPoints / daysElapsed) * i : null;
     burndownData.push({
       day: `Day ${i + 1}`,
-      ideal: Math.max(0, Math.round(idealRemaining)),
-      actual: actualRemaining !== null ? Math.max(0, Math.round(actualRemaining)) : null,
+      ideal: Math.max(0, idealRemaining), // Keep decimal precision for smooth ideal line
+      actual: actualRemaining !== null ? Math.round(Math.max(0, actualRemaining)) : null,
     });
   }
   const [chartColors, setChartColors] = useState({
@@ -82,8 +82,8 @@ export function SprintBurndown({ activeSprint, backlogItems }: SprintBurndownPro
     return () => observer.disconnect();
   }, []);
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', { 
-      month: 'short', 
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
@@ -100,9 +100,8 @@ export function SprintBurndown({ activeSprint, backlogItems }: SprintBurndownPro
             {formatDate(activeSprint.actualStartDate || activeSprint.startDate)} - {formatDate(activeSprint.endDate)}
           </p>
         </div>
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
-          isOnTrack ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-500'
-        }`}>
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${isOnTrack ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-500'
+          }`}>
           <TrendingDown className="w-4 h-4" />
           {isOnTrack ? 'On Track' : 'Needs Attention'}
         </div>
@@ -145,13 +144,7 @@ export function SprintBurndown({ activeSprint, backlogItems }: SprintBurndownPro
 
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={burndownData}>
-            <defs>
-              <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.3} />
-                <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0} />
-              </linearGradient>
-            </defs>
+          <LineChart data={burndownData}>
             <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
             <XAxis
               dataKey="day"
@@ -178,27 +171,32 @@ export function SprintBurndown({ activeSprint, backlogItems }: SprintBurndownPro
               }}
               labelStyle={{ color: chartColors.foreground }}
               itemStyle={{ color: chartColors.foreground }}
+              formatter={(value: any, name: string) => {
+                if (name === 'Ideal Burndown' && typeof value === 'number') {
+                  return [value.toFixed(2), name];
+                }
+                return [value, name];
+              }}
             />
             <Legend wrapperStyle={{ color: chartColors.foreground }} />
             <Line
               type="monotone"
               dataKey="ideal"
-              stroke={chartColors.muted}
-              strokeWidth={2}
+              stroke="#ef4444"
+              strokeWidth={3}
+              dot={{ fill: '#ef4444', r: 4 }}
+              name="Ideal Burndown"
               strokeDasharray="5 5"
-              dot={false}
-              name="Ideal Progress"
             />
-            <Area
+            <Line
               type="monotone"
               dataKey="actual"
               stroke={chartColors.primary}
               strokeWidth={3}
-              fill="url(#colorActual)"
               dot={{ fill: chartColors.primary, r: 4 }}
               name="Actual Progress"
             />
-          </AreaChart>
+          </LineChart>
         </ResponsiveContainer>
       </div>
 
@@ -206,7 +204,7 @@ export function SprintBurndown({ activeSprint, backlogItems }: SprintBurndownPro
         <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
           <p className="text-sm">
             <span className="text-primary">💡 AI Insight:</span>{' '}
-            {isOnTrack 
+            {isOnTrack
               ? `Your team is on track with ${completionPercentage}% completion. Keep up the good work!`
               : `Your team has completed ${completionPercentage}% with ${daysRemaining} days remaining. Consider reviewing blockers or adjusting scope.`
             }

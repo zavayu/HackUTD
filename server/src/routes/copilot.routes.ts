@@ -45,6 +45,39 @@ router.post('/:projectId/copilot/chat', verifyToken, async (req: any, res: Respo
       logger.warn('Could not fetch full project context', { error });
     }
 
+    // Get GitHub data if available
+    const GitHubRepoRepository = require('../repositories/GitHubRepoRepository').GitHubRepoRepository;
+    const gitHubRepoRepository = new GitHubRepoRepository();
+    let githubContext = null;
+    
+    try {
+      const repos = await gitHubRepoRepository.findByProjectId(projectId);
+      const activeRepo = repos.find((r: any) => r.isActive);
+      
+      if (activeRepo && activeRepo.commits) {
+        const recentCommits = activeRepo.commits.slice(0, 10);
+        const openPRs = activeRepo.pullRequests?.filter((pr: any) => pr.state === 'open') || [];
+        
+        githubContext = {
+          repoName: activeRepo.fullName,
+          totalCommits: activeRepo.commits.length,
+          recentCommits: recentCommits.map((c: any) => ({
+            message: c.message,
+            author: c.author,
+            date: c.date
+          })),
+          openPRs: openPRs.length,
+          recentPRs: openPRs.slice(0, 5).map((pr: any) => ({
+            title: pr.title,
+            author: pr.author
+          })),
+          lastSyncTime: activeRepo.lastSyncTime
+        };
+      }
+    } catch (error) {
+      logger.warn('Could not fetch GitHub context', { error });
+    }
+
     // Build context for AI
     const activeSprint = sprints.find((s: any) => s.status === 'active');
     const context = {
@@ -65,7 +98,8 @@ router.post('/:projectId/copilot/chat', verifyToken, async (req: any, res: Respo
         type: i.type,
         status: i.status,
         priority: i.priority
-      }))
+      })),
+      github: githubContext
     };
 
     // Build conversation context
@@ -74,6 +108,15 @@ router.post('/:projectId/copilot/chat', verifyToken, async (req: any, res: Respo
       : '';
 
     // Create prompt for Gemini
+    const githubInfo = context.github 
+      ? `\nGitHub Integration:
+- Repository: ${context.github.repoName}
+- Total Commits: ${context.github.totalCommits}
+- Open PRs: ${context.github.openPRs}
+- Recent Commits: ${context.github.recentCommits.map((c: any) => `"${c.message}" by ${c.author}`).join(', ')}
+- Last Synced: ${new Date(context.github.lastSyncTime).toLocaleString()}`
+      : '';
+
     const prompt = `You are an AI Project Management Copilot helping with project "${context.projectName}".
 
 Project Context:
@@ -82,13 +125,13 @@ Project Context:
 - In Progress: ${context.inProgressIssues}
 - Backlog: ${context.backlogIssues}
 - Active Sprint: ${context.activeSprint ? context.activeSprint.name : 'None'}
-- Total Sprints: ${context.totalSprints}
+- Total Sprints: ${context.totalSprints}${githubInfo}
 
 ${conversationContext ? `Previous conversation:\n${conversationContext}\n` : ''}
 
 User message: ${message}
 
-Provide a helpful, actionable response. If the user asks for actions (like creating stories, prioritizing, or sprint planning), provide specific recommendations. Keep responses concise and practical.`;
+Provide a helpful, actionable response. If the user asks for actions (like creating stories, prioritizing, or sprint planning), provide specific recommendations. ${context.github ? 'You have access to GitHub data, so you can provide insights about commits, PRs, and development activity.' : ''} Keep responses concise and practical.`;
 
     // Get AI response
     const aiResponse = await geminiService.chat(prompt);
