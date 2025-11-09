@@ -19,6 +19,7 @@ export interface Project {
     sprints: number;
     members: number;
   };
+  starred?: boolean;
 }
 
 export type ViewType = 'home' | 'login' | 'projects' | 'project';

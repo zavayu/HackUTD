@@ -68,27 +68,31 @@ export const projects: Project[] = [
     name: 'AI ProductHub', 
     color: 'bg-blue-500',
     description: 'AI-powered product management platform with intelligent insights',
-    stats: { stories: 24, sprints: 8, members: 5 }
+    stats: { stories: 24, sprints: 8, members: 5 },
+    starred: true
   },
   { 
     id: '2', 
     name: 'Mobile App v2', 
     color: 'bg-green-500',
     description: 'Next generation mobile experience with enhanced features',
-    stats: { stories: 18, sprints: 5, members: 4 }
+    stats: { stories: 18, sprints: 5, members: 4 },
+    starred: false
   },
   { 
     id: '3', 
     name: 'Platform Migration', 
     color: 'bg-purple-500',
     description: 'Enterprise platform modernization and cloud migration',
-    stats: { stories: 31, sprints: 12, members: 8 }
+    stats: { stories: 31, sprints: 12, members: 8 },
+    starred: true
   },
   { 
     id: '4', 
     name: 'Customer Portal', 
     color: 'bg-orange-500',
     description: 'Self-service portal for customer support and resources',
-    stats: { stories: 15, sprints: 4, members: 3 }
+    stats: { stories: 15, sprints: 4, members: 3 },
+    starred: false
   },
 ];

@@ -7,7 +7,7 @@ export function useTheme() {
   });
   
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
-    return (localStorage.getItem('theme-mode') as ThemeMode) || 'light';
+    return (localStorage.getItem('theme-mode') as ThemeMode) || 'system';
   });
 
   useEffect(() => {
