@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginPage as LoginPageComponent } from '../components/LoginPage';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,8 +6,15 @@ import { toast } from 'sonner';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  // Redirect to projects if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/projects', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async (email: string, password: string) => {
     try {

@@ -135,7 +135,27 @@ export const AIInsightsView: React.FC<AIInsightsViewProps> = ({ projectId }) => 
   if (loading) {
     return (
       <div className="w-full h-96 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <Loader2
+              className="w-12 h-12 text-primary"
+              style={{
+                animation: 'spin 1s linear infinite'
+              }}
+            />
+            <style>{`
+              @keyframes spin {
+                from {
+                  transform: rotate(0deg);
+                }
+                to {
+                  transform: rotate(360deg);
+                }
+              }
+            `}</style>
+          </div>
+          <p className="text-muted-foreground text-sm">Loading AI insights...</p>
+        </div>
       </div>
     );
   }

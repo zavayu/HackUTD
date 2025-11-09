@@ -8,6 +8,13 @@ export interface CreateProjectData {
   description?: string;
   status?: 'active' | 'archived';
   connectedRepos?: string[];
+  members?: Array<{
+    userId: mongoose.Types.ObjectId | string;
+    email: string;
+    name: string;
+    role: 'owner' | 'admin' | 'member';
+    addedAt: Date;
+  }>;
 }
 
 export interface UpdateProjectData {

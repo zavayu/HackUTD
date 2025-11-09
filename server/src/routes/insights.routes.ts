@@ -60,7 +60,16 @@ router.get('/:projectId/insights', verifyToken, async (req: any, res: Response, 
 
     // Calculate sprint velocity
     const sprintVelocity = sprints.map((sprint: any) => {
-      const sprintIssues = issues.filter((issue: any) => issue.sprintId === sprint._id);
+      const sprintId = String(sprint._id);
+      
+      const sprintIssues = issues.filter((issue: any) => {
+        if (!issue.sprintId) return false;
+        // Handle both populated sprint object and ObjectId
+        const issueSprintId = issue.sprintId._id 
+          ? String(issue.sprintId._id)  // Populated sprint object
+          : String(issue.sprintId);      // Plain ObjectId
+        return issueSprintId === sprintId;
+      });
       const completed = sprintIssues.filter((i: any) => i.status === 'done').length;
       const planned = sprintIssues.length;
       
