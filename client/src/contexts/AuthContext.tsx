@@ -1,24 +1,77 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import {
-  User,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  updateProfile,
-} from 'firebase/auth';
-import { auth } from '../config/firebase';
-import { apiService } from '../services/api';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { authService } from '../services/authService';
+
+interface AuthUser {
+  _id: string;
+  email: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface AuthContextType {
-  currentUser: User | null;
+  isLoggedIn: boolean;
+  user: AuthUser | null;
   loading: boolean;
-  signup: (email: string, password: string, name: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  signup: (email: string, password: string, name: string) => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(() => authService.isAuthenticated());
+  const [user, setUser] = useState<AuthUser | null>(() => authService.getStoredUser());
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if token is valid on mount
+    const checkAuth = async () => {
+      if (authService.isAuthenticated()) {
+        try {
+          const response = await authService.getCurrentUser();
+          if (response.user) {
+            setUser(response.user);
+            setIsLoggedIn(true);
+          }
+        } catch (error) {
+          // Token is invalid, logout
+          authService.logout();
+          setIsLoggedIn(false);
+          setUser(null);
+        }
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const response = await authService.login(email, password);
+    setIsLoggedIn(true);
+    setUser(response.user || null);
+  };
+
+  const signup = async (email: string, password: string, name: string) => {
+    const response = await authService.signup(email, password, name);
+    setIsLoggedIn(true);
+    setUser(response.user || null);
+  };
+
+  const logout = () => {
+    authService.logout();
+    setIsLoggedIn(false);
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ isLoggedIn, user, loading, login, signup, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -26,99 +79,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  async function signup(email: string, password: string, name: string) {
-    // Create user in Firebase
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    
-    // Update the user's display name in Firebase
-    if (userCredential.user) {
-      await updateProfile(userCredential.user, {
-        displayName: name,
-      });
-
-      // Sync user data to MongoDB
-      try {
-        const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${userCredential.user.uid}`;
-        
-        await apiService.createFirebaseUser({
-          firebaseUid: userCredential.user.uid,
-          email: userCredential.user.email || email,
-          name: name,
-          avatar: avatar,
-        });
-
-        console.log('✅ User synced to MongoDB');
-      } catch (error) {
-        console.error('❌ Failed to sync user to MongoDB:', error);
-        // Don't throw error - user is created in Firebase, we can retry sync later
-      }
-    }
-  }
-
-  async function login(email: string, password: string) {
-    await signInWithEmailAndPassword(auth, email, password);
-  }
-
-  async function logout() {
-    await signOut(auth);
-  }
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      
-      // If user just logged in, ensure they exist in MongoDB
-      if (user) {
-        try {
-          const response = await apiService.getFirebaseUser(user.uid);
-          
-          if (response.success && response.user) {
-            console.log('✅ User found in MongoDB');
-          }
-        } catch (error: any) {
-          // User doesn't exist in MongoDB (404), create them
-          if (error.message?.includes('User not found') || error.message?.includes('404')) {
-            console.log('📝 User not found in MongoDB, creating...');
-            try {
-              await apiService.createFirebaseUser({
-                firebaseUid: user.uid,
-                email: user.email || '',
-                name: user.displayName || 'User',
-                avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
-              });
-              console.log('✅ User created in MongoDB');
-            } catch (createError) {
-              console.error('❌ Failed to create user in MongoDB:', createError);
-            }
-          } else {
-            console.error('❌ Error checking user in MongoDB:', error);
-          }
-        }
-      }
-      
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  const value = {
-    currentUser,
-    loading,
-    signup,
-    login,
-    logout,
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
 }

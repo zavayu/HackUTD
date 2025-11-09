@@ -35,29 +35,22 @@ export function ProfileDropdown() {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setIsOpen(false);
-    try {
-      // Clear any stored data
-      localStorage.removeItem('github_connection');
-      
-      // Sign out from Firebase
-      await logout();
-      
-      toast.success('Signed out successfully', {
-        description: 'You have been logged out',
-        duration: 2000,
-      });
-      
-      // Navigate to login page
+    // Clear any stored auth data
+    localStorage.removeItem('github_connection');
+    
+    logout();
+    
+    toast.success('Signed out successfully', {
+      description: 'You have been logged out',
+      duration: 2000,
+    });
+    
+    // Navigate to login page
+    setTimeout(() => {
       navigate('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Failed to sign out', {
-        description: 'Please try again',
-        duration: 2000,
-      });
-    }
+    }, 500);
   };
 
   return (

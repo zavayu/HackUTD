@@ -1,81 +1,135 @@
 import { Router, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 
 const router = Router();
+const JWT_SECRET: string = process.env['JWT_SECRET'] || 'your-secret-key';
+const JWT_EXPIRATION: string = process.env['JWT_EXPIRATION'] || '24h';
 
-// Create or update user from Firebase signup
-router.post('/firebase-signup', async (req: Request, res: Response) => {
+// Sign up
+router.post('/signup', async (req: Request, res: Response) => {
   try {
-    const { firebaseUid, email, name, avatar } = req.body;
+    const { email, password, name } = req.body;
 
     // Validate required fields
-    if (!firebaseUid || !email || !name) {
+    if (!email || !password || !name) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: firebaseUid, email, and name are required'
+        message: 'Email, password, and name are required'
       });
     }
 
-    // Check if user already exists by Firebase UID
-    let user = await User.findOne({ firebaseUid });
-
-    if (user) {
-      // User exists, update their info
-      user.email = email;
-      user.name = name;
-      if (avatar) user.avatar = avatar;
-      await user.save();
-
-      return res.status(200).json({
-        success: true,
-        message: 'User updated successfully',
-        user: user.toJSON()
-      });
-    }
-
-    // Check if email is already used by another user
-    const existingEmailUser = await User.findOne({ email });
-    if (existingEmailUser) {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: 'Email already registered with a different account'
+        message: 'User with this email already exists'
       });
     }
 
     // Create new user
-    user = new User({
-      firebaseUid,
+    const user = new User({
       email,
-      name,
-      avatar: avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${firebaseUid}`,
-      authProvider: 'firebase',
-      role: 'Product Manager'
+      password,
+      name
     });
 
     await user.save();
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      JWT_SECRET as jwt.Secret,
+      { expiresIn: JWT_EXPIRATION } as jwt.SignOptions
+    );
+
     return res.status(201).json({
       success: true,
       message: 'User created successfully',
+      token,
       user: user.toJSON()
     });
 
   } catch (error: any) {
-    console.error('Firebase signup error:', error);
+    console.error('Signup error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to create/update user',
+      message: 'Failed to create user',
       error: error.message
     });
   }
 });
 
-// Get user by Firebase UID
-router.get('/firebase-user/:firebaseUid', async (req: Request, res: Response) => {
+// Login
+router.post('/login', async (req: Request, res: Response) => {
   try {
-    const { firebaseUid } = req.params;
+    const { email, password } = req.body;
 
-    const user = await User.findOne({ firebaseUid });
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+
+    // Check password
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      JWT_SECRET as jwt.Secret,
+      { expiresIn: JWT_EXPIRATION } as jwt.SignOptions
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: user.toJSON()
+    });
+
+  } catch (error: any) {
+    console.error('Login error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to login',
+      error: error.message
+    });
+  }
+});
+
+// Get current user (requires token)
+router.get('/me', async (req: Request, res: Response) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided'
+      });
+    }
+
+    const decoded: any = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.userId);
 
     if (!user) {
       return res.status(404).json({
@@ -91,47 +145,9 @@ router.get('/firebase-user/:firebaseUid', async (req: Request, res: Response) =>
 
   } catch (error: any) {
     console.error('Get user error:', error);
-    return res.status(500).json({
+    return res.status(401).json({
       success: false,
-      message: 'Failed to fetch user',
-      error: error.message
-    });
-  }
-});
-
-// Update user profile
-router.put('/user/:firebaseUid', async (req: Request, res: Response) => {
-  try {
-    const { firebaseUid } = req.params;
-    const { name, avatar, role } = req.body;
-
-    const user = await User.findOne({ firebaseUid });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    // Update fields if provided
-    if (name) user.name = name;
-    if (avatar) user.avatar = avatar;
-    if (role) user.role = role;
-
-    await user.save();
-
-    return res.status(200).json({
-      success: true,
-      message: 'User updated successfully',
-      user: user.toJSON()
-    });
-
-  } catch (error: any) {
-    console.error('Update user error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to update user',
+      message: 'Invalid or expired token',
       error: error.message
     });
   }

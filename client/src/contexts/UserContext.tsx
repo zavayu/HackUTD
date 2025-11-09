@@ -17,21 +17,21 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const { currentUser } = useAuth();
+  const { user: authUser } = useAuth();
 
   const user = useMemo(() => {
-    if (currentUser) {
+    if (authUser) {
       return {
-        id: currentUser.uid,
-        name: currentUser.displayName || 'User',
-        email: currentUser.email || '',
-        avatar: currentUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}`,
-        role: 'Product Manager', // Default role, can be stored in Firestore
-        joinedDate: currentUser.metadata.creationTime || new Date().toISOString(),
+        id: authUser._id,
+        name: authUser.name,
+        email: authUser.email,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${authUser._id}`,
+        role: 'Product Manager',
+        joinedDate: authUser.createdAt,
       };
     }
-    
-    // Fallback for when no user is logged in (shouldn't happen in protected routes)
+
+    // Fallback for when no user is logged in
     return {
       id: '1',
       name: 'Guest User',
@@ -40,7 +40,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       role: 'Guest',
       joinedDate: new Date().toISOString(),
     };
-  }, [currentUser]);
+  }, [authUser]);
 
   return (
     <UserContext.Provider value={{ user }}>
