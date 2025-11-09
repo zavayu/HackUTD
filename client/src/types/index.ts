@@ -1,0 +1,27 @@
+export interface BacklogItem {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  priority: 'high' | 'medium' | 'low';
+  progress: number;
+  assignee?: string;
+  storyPoints: number;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+  stats?: {
+    stories: number;
+    sprints: number;
+    members: number;
+  };
+}
+
+export type ViewType = 'home' | 'login' | 'projects' | 'project';
+export type TabType = 'dashboard' | 'backlog' | 'sprints' | 'insights' | 'settings';
+export type WorkspaceTabType = 'backlog' | 'board';
+export type ThemeMode = 'light' | 'dark' | 'system';
