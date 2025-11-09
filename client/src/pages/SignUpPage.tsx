@@ -21,7 +21,7 @@ export function SignUpPage() {
       setLoading(true);
       await signup(data.email, data.password, data.name);
       
-      toast.success('Welcome to AI ProductHub!', {
+      toast.success('Welcome to ProdigyPM!', {
         description: 'Your account has been created successfully',
         duration: 3000,
       });
