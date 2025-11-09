@@ -368,14 +368,16 @@ export class GitHubService {
   }
 
   /**
-   * Connect a repository and validate access
+   * Connect a repository to a project and validate access
    * @param userId - User ID
+   * @param projectId - Project ID
    * @param repoFullName - Repository full name (owner/repo)
    * @param accessToken - GitHub access token
    * @returns Created repository record
    */
   async connectRepository(
-    userId: string, 
+    userId: string,
+    projectId: string,
     repoFullName: string, 
     accessToken: string
   ): Promise<any> {
@@ -402,6 +404,7 @@ export class GitHubService {
       // Create the repository connection
       const repoData = {
         userId,
+        projectId,
         fullName: repoFullName,
         accessToken,
         isActive: true,

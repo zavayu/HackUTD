@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 
 export interface CreateGitHubRepoData {
   userId: string;
+  projectId: string;
   fullName: string;
   accessToken: string;
   isActive?: boolean;
@@ -29,7 +30,8 @@ export class GitHubRepoRepository {
     try {
       const repoData = {
         ...data,
-        userId: new mongoose.Types.ObjectId(data.userId)
+        userId: new mongoose.Types.ObjectId(data.userId),
+        projectId: new mongoose.Types.ObjectId(data.projectId)
       };
       
       const repo = new GitHubRepo(repoData);
@@ -39,8 +41,10 @@ export class GitHubRepoRepository {
       console.error('GitHubRepo creation error:', error);
       
       // Handle duplicate fullName constraint
-      if (error.code === 11000 && error.keyPattern?.fullName) {
-        throw new AppError(400, 'DUPLICATE_REPO', 'Repository is already connected');
+      if (error.code === 11000) {
+        if (error.keyPattern?.fullName) {
+          throw new AppError(400, 'DUPLICATE_REPO', 'Repository is already connected to this project');
+        }
       }
       
       // Handle validation errors
@@ -73,6 +77,32 @@ export class GitHubRepoRepository {
         .sort({ updatedAt: -1 });
     } catch (error) {
       throw new AppError(500, 'DATABASE_ERROR', 'Failed to find repositories by user ID');
+    }
+  }
+
+  /**
+   * Find repositories by project ID
+   */
+  async findByProjectId(projectId: string): Promise<IGitHubRepo[]> {
+    try {
+      return await GitHubRepo.find({ projectId: new mongoose.Types.ObjectId(projectId) })
+        .sort({ updatedAt: -1 });
+    } catch (error) {
+      throw new AppError(500, 'DATABASE_ERROR', 'Failed to find repositories by project ID');
+    }
+  }
+
+  /**
+   * Find active repository for a project
+   */
+  async findActiveByProjectId(projectId: string): Promise<IGitHubRepo | null> {
+    try {
+      return await GitHubRepo.findOne({ 
+        projectId: new mongoose.Types.ObjectId(projectId),
+        isActive: true 
+      }).select('+accessToken');
+    } catch (error) {
+      throw new AppError(500, 'DATABASE_ERROR', 'Failed to find active repository for project');
     }
   }
 

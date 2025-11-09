@@ -32,7 +32,7 @@ app.use(passport.initialize());
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/github', githubRoutes);
+app.use('/api/projects/:projectId/github', githubRoutes); // Mount github routes with projectId
 app.use('/api/projects', projectRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/sprints', sprintRoutes);

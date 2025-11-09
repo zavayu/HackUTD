@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProjectView } from '../views/ProjectView';
+import { GitHubProvider } from '../components/GitHubContext';
 import { useTheme } from '../hooks/useTheme';
 import { useUser } from '../contexts/UserContext';
 import { projectService, Project as ApiProject } from '../services/projectService';
@@ -398,37 +399,39 @@ export function ProjectPage() {
   }
 
   return (
-    <ProjectView
-      activeTab={activeTab}
-      aiCopilotOpen={aiCopilotOpen}
-      newStoryModalOpen={newStoryModalOpen}
-      theme={theme}
-      themeMode={themeMode}
-      backlogItems={backlogItems}
-      selectedProject={selectedProject}
-      projects={allProjects}
-      sprints={sprints}
-      activeSprint={activeSprint}
-      ownerEmail={user.email}
-      onTabChange={setActiveTab}
-      onAICopilotToggle={() => setAiCopilotOpen(!aiCopilotOpen)}
-      onNewStoryModalToggle={() => setNewStoryModalOpen(!newStoryModalOpen)}
-      onThemeChange={handleThemeChange}
-      onThemeModeChange={handleThemeModeChange}
-      onProjectChange={handleProjectChange}
-      onBackToProjects={handleBackToProjects}
-      onCreateStory={handleCreateStory}
-      onAIPrompt={handleAIPrompt}
-      onApplyAIChanges={handleApplyAIChanges}
-      onAISuggestion={handleAISuggestion}
-      onItemMove={handleItemMove}
-      onCreateSprint={handleCreateSprint}
-      onStartSprint={handleStartSprint}
-      onCompleteSprint={handleCompleteSprint}
-      onAddIssuesToSprint={handleAddIssuesToSprint}
-      onRemoveIssueFromSprint={handleRemoveIssueFromSprint}
-      onAddMember={handleAddMember}
-      onRemoveMember={handleRemoveMember}
-    />
+    <GitHubProvider projectId={projectId}>
+      <ProjectView
+        activeTab={activeTab}
+        aiCopilotOpen={aiCopilotOpen}
+        newStoryModalOpen={newStoryModalOpen}
+        theme={theme}
+        themeMode={themeMode}
+        backlogItems={backlogItems}
+        selectedProject={selectedProject}
+        projects={allProjects}
+        sprints={sprints}
+        activeSprint={activeSprint}
+        ownerEmail={user.email}
+        onTabChange={setActiveTab}
+        onAICopilotToggle={() => setAiCopilotOpen(!aiCopilotOpen)}
+        onNewStoryModalToggle={() => setNewStoryModalOpen(!newStoryModalOpen)}
+        onThemeChange={handleThemeChange}
+        onThemeModeChange={handleThemeModeChange}
+        onProjectChange={handleProjectChange}
+        onBackToProjects={handleBackToProjects}
+        onCreateStory={handleCreateStory}
+        onAIPrompt={handleAIPrompt}
+        onApplyAIChanges={handleApplyAIChanges}
+        onAISuggestion={handleAISuggestion}
+        onItemMove={handleItemMove}
+        onCreateSprint={handleCreateSprint}
+        onStartSprint={handleStartSprint}
+        onCompleteSprint={handleCompleteSprint}
+        onAddIssuesToSprint={handleAddIssuesToSprint}
+        onRemoveIssueFromSprint={handleRemoveIssueFromSprint}
+        onAddMember={handleAddMember}
+        onRemoveMember={handleRemoveMember}
+      />
+    </GitHubProvider>
   );
 }

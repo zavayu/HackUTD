@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 interface GitHubConnectionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  projectId: string;
 }
 
 interface GitHubRepoFromAPI {
@@ -39,7 +40,7 @@ interface AvailableGitHubRepo {
   updated_at: string;
 }
 
-export function GitHubConnectionModal({ isOpen, onClose }: GitHubConnectionModalProps) {
+export function GitHubConnectionModal({ isOpen, onClose, projectId }: GitHubConnectionModalProps) {
   const { repositories, connectGitHub, selectedRepo } = useGitHub();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRepoId, setSelectedRepoId] = useState<number | null>(
@@ -65,8 +66,8 @@ export function GitHubConnectionModal({ isOpen, onClose }: GitHubConnectionModal
     try {
       setLoading(true);
       const [connectedResponse, availableResponse] = await Promise.all([
-        api.getGitHubRepos(),
-        api.getAvailableGitHubRepos()
+        api.getGitHubRepos(projectId),
+        api.getAvailableGitHubRepos(projectId)
       ]);
       setConnectedRepos(connectedResponse.data || []);
       setAvailableRepos(availableResponse.data || []);
@@ -93,7 +94,7 @@ export function GitHubConnectionModal({ isOpen, onClose }: GitHubConnectionModal
 
     try {
       setConnecting(true);
-      const response = await api.connectGitHubRepo(selectedAvailableRepo);
+      const response = await api.connectGitHubRepo(projectId, selectedAvailableRepo);
       
       toast.success('Repository Connected', {
         description: `Successfully connected to ${selectedAvailableRepo}`,
@@ -126,11 +127,11 @@ export function GitHubConnectionModal({ isOpen, onClose }: GitHubConnectionModal
     };
     
     // Connect with the MongoDB _id for fetching data
-    connectGitHub(contextRepo, repo._id);
+    connectGitHub(contextRepo, repo._id, projectId);
     
     // Trigger sync in the background
     try {
-      await api.syncGitHubRepoData(repo._id);
+      await api.syncGitHubRepoData(projectId, repo._id);
       toast.success('Repository Selected & Syncing', {
         description: `Now using ${repo.repoFullName}. Data is being synced...`,
       });
@@ -162,7 +163,7 @@ export function GitHubConnectionModal({ isOpen, onClose }: GitHubConnectionModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">

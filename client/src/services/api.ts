@@ -16,9 +16,9 @@ export const api = {
   },
 
   // Get available GitHub repositories from GitHub API
-  getAvailableGitHubRepos: async () => {
+  getAvailableGitHubRepos: async (projectId: string) => {
     const token = api.getToken();
-    const response = await fetch(`${API_URL}/github/available-repos`, {
+    const response = await fetch(`${API_URL}/projects/${projectId}/github/available-repos`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -32,10 +32,10 @@ export const api = {
     return response.json();
   },
 
-  // Get connected GitHub repositories
-  getGitHubRepos: async () => {
+  // Get connected GitHub repositories for a project
+  getGitHubRepos: async (projectId: string) => {
     const token = api.getToken();
-    const response = await fetch(`${API_URL}/github/repos`, {
+    const response = await fetch(`${API_URL}/projects/${projectId}/github/repos`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -49,10 +49,10 @@ export const api = {
     return response.json();
   },
 
-  // Connect a GitHub repository
-  connectGitHubRepo: async (repoFullName: string) => {
+  // Connect a GitHub repository to a project
+  connectGitHubRepo: async (projectId: string, repoFullName: string) => {
     const token = api.getToken();
-    const response = await fetch(`${API_URL}/github/repos/connect`, {
+    const response = await fetch(`${API_URL}/projects/${projectId}/github/repos/connect`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -70,9 +70,9 @@ export const api = {
   },
 
   // Disconnect a GitHub repository
-  disconnectGitHubRepo: async (repoId: string) => {
+  disconnectGitHubRepo: async (projectId: string, repoId: string) => {
     const token = api.getToken();
-    const response = await fetch(`${API_URL}/github/repos/${repoId}`, {
+    const response = await fetch(`${API_URL}/projects/${projectId}/github/repos/${repoId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -87,28 +87,10 @@ export const api = {
     return response.json();
   },
 
-  // Sync repository data
-  syncGitHubRepo: async (repoId: string) => {
-    const token = api.getToken();
-    const response = await fetch(`${API_URL}/github/repos/${repoId}/sync`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to sync repository');
-    }
-    
-    return response.json();
-  },
-
   // Get repository data
-  getGitHubRepoData: async (repoId: string) => {
+  getGitHubRepoData: async (projectId: string, repoId: string) => {
     const token = api.getToken();
-    const response = await fetch(`${API_URL}/github/repos/${repoId}/data`, {
+    const response = await fetch(`${API_URL}/projects/${projectId}/github/repos/${repoId}/data`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -123,9 +105,9 @@ export const api = {
   },
 
   // Sync repository data
-  syncGitHubRepoData: async (repoId: string) => {
+  syncGitHubRepoData: async (projectId: string, repoId: string) => {
     const token = api.getToken();
-    const response = await fetch(`${API_URL}/github/repos/${repoId}/sync`, {
+    const response = await fetch(`${API_URL}/projects/${projectId}/github/repos/${repoId}/sync`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

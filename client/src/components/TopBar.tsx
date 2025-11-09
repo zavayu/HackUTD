@@ -7,9 +7,10 @@ import { ProfileDropdown } from './ProfileDropdown';
 interface TopBarProps {
   onAICopilotToggle: () => void;
   aiCopilotOpen: boolean;
+  projectId?: string;
 }
 
-export function TopBar({ onAICopilotToggle, aiCopilotOpen }: TopBarProps) {
+export function TopBar({ onAICopilotToggle, aiCopilotOpen, projectId }: TopBarProps) {
   const { isConnected, selectedRepo, disconnectGitHub } = useGitHub();
   const [showGitHubModal, setShowGitHubModal] = useState(false);
 
@@ -78,7 +79,13 @@ export function TopBar({ onAICopilotToggle, aiCopilotOpen }: TopBarProps) {
         </div>
       </div>
 
-      <GitHubConnectionModal isOpen={showGitHubModal} onClose={() => setShowGitHubModal(false)} />
+      {projectId && (
+        <GitHubConnectionModal 
+          isOpen={showGitHubModal} 
+          onClose={() => setShowGitHubModal(false)} 
+          projectId={projectId}
+        />
+      )}
     </>
   );
 }
