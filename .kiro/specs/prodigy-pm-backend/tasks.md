@@ -117,20 +117,20 @@
     - Validate date ranges on creation and update
     - _Requirements: 3.3_
 
-- [ ] 7. Implement GitHub OAuth and integration service
-  - [ ] 7.1 Set up Passport GitHub OAuth strategy
+- [x] 7. Implement GitHub OAuth and integration service
+  - [x] 7.1 Set up Passport GitHub OAuth strategy
     - Configure passport-github2 with client ID, secret, and callback URL
     - Implement OAuth callback handler to exchange code for access token
     - Store encrypted access token in user record
     - _Requirements: 2.1, 2.2, 2.3_
-  - [ ] 7.2 Create GitHubService for API interactions
+  - [x] 7.2 Create GitHubService for API interactions
     - Implement fetchCommits method using GitHub REST API with date filtering (last 7 days)
     - Implement fetchPullRequests method to get open and recently merged PRs
     - Implement fetchIssues method to get open and recently closed issues
     - Add error handling for 401 responses to mark connection as invalid
     - Implement retry logic with exponential backoff (3 retries, starting at 30 seconds)
     - _Requirements: 2.5, 7.2, 7.4_
-  - [ ] 7.3 Implement repository connection and sync
+  - [x] 7.3 Implement repository connection and sync
     - Create connectRepository method to validate repo access and store connection
     - Create disconnectRepository method to revoke token and delete repo data
     - Create syncRepository method to fetch and store commits, PRs, and issues

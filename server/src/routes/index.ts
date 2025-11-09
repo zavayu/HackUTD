@@ -1,4 +1,13 @@
-// API routes will be implemented here
-// This file will export all route handlers
+import { Router } from 'express';
+import authRoutes from './auth';
+import githubRoutes from './github';
 
-export {};
+const router = Router();
+
+// Mount auth routes
+router.use('/auth', authRoutes);
+
+// Mount GitHub routes
+router.use('/github', githubRoutes);
+
+export default router;
