@@ -77,18 +77,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (user) {
         try {
           const response = await apiService.getFirebaseUser(user.uid);
-          if (!response.success) {
-            // User doesn't exist in MongoDB, create them
-            console.log('User not found in MongoDB, creating...');
-            await apiService.createFirebaseUser({
-              firebaseUid: user.uid,
-              email: user.email || '',
-              name: user.displayName || 'User',
-              avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
-            });
+          
+          if (response.success && response.user) {
+            console.log('✅ User found in MongoDB');
           }
-        } catch (error) {
-          console.error('Error syncing user on login:', error);
+        } catch (error: any) {
+          // User doesn't exist in MongoDB (404), create them
+          if (error.message?.includes('User not found') || error.message?.includes('404')) {
+            console.log('📝 User not found in MongoDB, creating...');
+            try {
+              await apiService.createFirebaseUser({
+                firebaseUid: user.uid,
+                email: user.email || '',
+                name: user.displayName || 'User',
+                avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+              });
+              console.log('✅ User created in MongoDB');
+            } catch (createError) {
+              console.error('❌ Failed to create user in MongoDB:', createError);
+            }
+          } else {
+            console.error('❌ Error checking user in MongoDB:', error);
+          }
         }
       }
       

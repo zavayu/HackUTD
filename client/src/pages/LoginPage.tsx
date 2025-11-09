@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginPage as LoginPageComponent } from '../components/LoginPage';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,10 +10,11 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   // Redirect if already logged in
-  if (currentUser) {
-    navigate('/projects');
-    return null;
-  }
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/projects', { replace: true });
+    }
+  }, [currentUser, navigate]);
 
   const handleLogin = async (email: string, password: string) => {
     try {

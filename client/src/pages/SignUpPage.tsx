@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SignUpPage as SignUpPageComponent } from '../components/SignUpPage';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,10 +10,11 @@ export function SignUpPage() {
   const [loading, setLoading] = useState(false);
 
   // Redirect if already logged in
-  if (currentUser) {
-    navigate('/projects');
-    return null;
-  }
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/projects', { replace: true });
+    }
+  }, [currentUser, navigate]);
 
   const handleSignUp = async (data: { name: string; email: string; password: string }) => {
     try {

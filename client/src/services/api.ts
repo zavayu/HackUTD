@@ -31,12 +31,18 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
+        const error: any = new Error(data.message || 'API request failed');
+        error.status = response.status;
+        error.data = data;
+        throw error;
       }
 
       return data;
     } catch (error: any) {
-      console.error('API Error:', error);
+      // Don't log 404 errors as they're expected when user doesn't exist yet
+      if (error.status !== 404) {
+        console.error('API Error:', error);
+      }
       throw error;
     }
   }
