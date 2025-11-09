@@ -1,21 +1,48 @@
+import { useState } from 'react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { BacklogCard, BacklogItem } from '../components/BacklogCard';
 import { BacklogFilters } from '../components/BacklogFilters';
+import { EditStoryModal } from '../components/EditStoryModal';
+import { AssignMemberModal } from '../components/AssignMemberModal';
 import { motion } from 'motion/react';
+import { ProjectMember } from '../types';
 
 interface BacklogViewProps {
   theme: string;
   backlogItems: BacklogItem[];
+  members: ProjectMember[];
+  ownerEmail: string;
   onThemeChange: (theme: string) => void;
   onAISuggestion: (type: string) => void;
+  onEditStory: (storyId: string, updates: Partial<BacklogItem>) => void;
+  onAssignStory: (storyId: string, assignee: string) => void;
+  onDeleteStory: (storyId: string) => void;
 }
 
 export function BacklogView({
   theme,
   backlogItems,
+  members,
+  ownerEmail,
   onThemeChange,
   onAISuggestion,
+  onEditStory,
+  onAssignStory,
+  onDeleteStory,
 }: BacklogViewProps) {
+  const [editingStory, setEditingStory] = useState<BacklogItem | null>(null);
+  const [assigningStory, setAssigningStory] = useState<BacklogItem | null>(null);
+
+  const handleEdit = (item: BacklogItem) => {
+    console.log('Edit clicked:', item);
+    setEditingStory(item);
+  };
+
+  const handleAssign = (item: BacklogItem) => {
+    console.log('Assign clicked:', item);
+    setAssigningStory(item);
+  };
+
   // Filter to only show items in backlog status (not assigned to any sprint)
   const backlogOnlyItems = backlogItems.filter(item => item.status === 'backlog');
 
@@ -46,12 +73,33 @@ export function BacklogView({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <BacklogCard item={item} />
+                <BacklogCard 
+                  item={item}
+                  onEdit={handleEdit}
+                  onAssign={handleAssign}
+                  onDelete={onDeleteStory}
+                />
               </motion.div>
             ))}
           </div>
         )}
       </div>
+
+      <EditStoryModal
+        isOpen={!!editingStory}
+        story={editingStory}
+        onClose={() => setEditingStory(null)}
+        onSave={onEditStory}
+      />
+
+      <AssignMemberModal
+        isOpen={!!assigningStory}
+        story={assigningStory}
+        members={members}
+        ownerEmail={ownerEmail}
+        onClose={() => setAssigningStory(null)}
+        onAssign={onAssignStory}
+      />
     </div>
   );
 }

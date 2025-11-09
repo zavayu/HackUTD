@@ -6,6 +6,7 @@ export interface BacklogItem {
   priority: 'high' | 'medium' | 'low';
   progress: number;
   status: 'backlog' | 'todo' | 'in_progress' | 'done';
+  sprintId?: string;
   assignee?: string;
   storyPoints: number;
 }

@@ -31,6 +31,7 @@ const mapIssueToBacklogItem = (issue: Issue): BacklogItem => {
     priority: issue.priority as 'high' | 'medium' | 'low',
     progress,
     status: issue.status,
+    sprintId: issue.sprintId,
     assignee: issue.assignee,
     storyPoints: issue.estimatedHours ? Math.ceil(issue.estimatedHours / 8) : 5,
   };
@@ -370,6 +371,65 @@ export function ProjectPage() {
     }
   };
 
+  const handleEditStory = async (storyId: string, updates: any) => {
+    try {
+      const updateData: any = {};
+      if (updates.title) updateData.title = updates.title;
+      if (updates.description) updateData.description = updates.description;
+      if (updates.priority) updateData.priority = updates.priority;
+      if (updates.storyPoints) {
+        updateData.estimatedHours = updates.storyPoints * 8; // Convert story points to hours
+      }
+
+      const response = await issueService.updateIssue(storyId, updateData);
+      if (response.success) {
+        toast.success('Story updated!', {
+          duration: 2000,
+        });
+        await loadProjectData();
+      }
+    } catch (error: any) {
+      toast.error('Failed to update story', {
+        description: error.message,
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleAssignStory = async (storyId: string, assignee: string) => {
+    try {
+      const response = await issueService.updateIssue(storyId, { assignee });
+      if (response.success) {
+        toast.success(assignee ? 'Story assigned!' : 'Assignment removed', {
+          duration: 2000,
+        });
+        await loadProjectData();
+      }
+    } catch (error: any) {
+      toast.error('Failed to assign story', {
+        description: error.message,
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleDeleteStory = async (storyId: string) => {
+    try {
+      const response = await issueService.deleteIssue(storyId);
+      if (response.success) {
+        toast.success('Story deleted', {
+          duration: 1500,
+        });
+        await loadProjectData();
+      }
+    } catch (error: any) {
+      toast.error('Failed to delete story', {
+        description: error.message,
+        duration: 3000,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -429,6 +489,9 @@ export function ProjectPage() {
       onRemoveIssueFromSprint={handleRemoveIssueFromSprint}
       onAddMember={handleAddMember}
       onRemoveMember={handleRemoveMember}
+      onEditStory={handleEditStory}
+      onAssignStory={handleAssignStory}
+      onDeleteStory={handleDeleteStory}
     />
   );
 }

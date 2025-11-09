@@ -1,15 +1,24 @@
+import { useState } from 'react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { BacklogItem } from '../components/BacklogCard';
 import { KanbanBoard } from '../components/KanbanBoard';
+import { EditStoryModal } from '../components/EditStoryModal';
+import { AssignMemberModal } from '../components/AssignMemberModal';
 import { Plus } from 'lucide-react';
+import { ProjectMember } from '../types';
 
 interface BoardViewProps {
   theme: string;
   backlogItems: BacklogItem[];
+  members: ProjectMember[];
+  ownerEmail: string;
   onThemeChange: (theme: string) => void;
   onItemMove: (itemId: string, newStatus: string) => void;
   onNewStoryClick: () => void;
   onTabChange: (tab: string) => void;
+  onEditStory: (storyId: string, updates: any) => void;
+  onAssignStory: (storyId: string, assignee: string) => void;
+  onDeleteStory: (storyId: string) => void;
   activeSprint?: {
     name: string;
     goal: string;
@@ -21,12 +30,20 @@ interface BoardViewProps {
 export function BoardView({
   theme,
   backlogItems,
+  members,
+  ownerEmail,
   onThemeChange,
   onItemMove,
   onNewStoryClick,
   onTabChange,
+  onEditStory,
+  onAssignStory,
+  onDeleteStory,
   activeSprint,
 }: BoardViewProps) {
+  const [editingStory, setEditingStory] = useState<BacklogItem | null>(null);
+  const [assigningStory, setAssigningStory] = useState<BacklogItem | null>(null);
+
   // Filter to only show items that are NOT in backlog status (i.e., in a sprint)
   const sprintItems = backlogItems.filter(item => item.status !== 'backlog');
 
@@ -75,7 +92,13 @@ export function BoardView({
             </button>
           </div>
         ) : (
-          <KanbanBoard items={sprintItems} onItemMove={onItemMove} />
+          <KanbanBoard 
+            items={sprintItems} 
+            onItemMove={onItemMove}
+            onEdit={(item) => setEditingStory(item)}
+            onAssign={(item) => setAssigningStory(item)}
+            onDelete={onDeleteStory}
+          />
         )}
         
         <div className="max-w-4xl mx-auto mt-8">
@@ -126,6 +149,22 @@ export function BoardView({
           </div>
         </div>
       </div>
+
+      <EditStoryModal
+        isOpen={!!editingStory}
+        story={editingStory}
+        onClose={() => setEditingStory(null)}
+        onSave={onEditStory}
+      />
+
+      <AssignMemberModal
+        isOpen={!!assigningStory}
+        story={assigningStory}
+        members={members}
+        ownerEmail={ownerEmail}
+        onClose={() => setAssigningStory(null)}
+        onAssign={onAssignStory}
+      />
     </div>
   );
 }
