@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { User, LogOut, Settings, Mail, Calendar } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useUser } from '../contexts/UserContext';
+import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 
 export function ProfileDropdown() {
   const { user } = useUser();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -33,21 +35,29 @@ export function ProfileDropdown() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsOpen(false);
-    // Clear any stored auth data
-    localStorage.removeItem('github_connection');
-    localStorage.removeItem('auth_token');
-    
-    toast.success('Signed out successfully', {
-      description: 'You have been logged out',
-      duration: 2000,
-    });
-    
-    // Navigate to login page
-    setTimeout(() => {
+    try {
+      // Clear any stored data
+      localStorage.removeItem('github_connection');
+      
+      // Sign out from Firebase
+      await logout();
+      
+      toast.success('Signed out successfully', {
+        description: 'You have been logged out',
+        duration: 2000,
+      });
+      
+      // Navigate to login page
       navigate('/login');
-    }, 500);
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Failed to sign out', {
+        description: 'Please try again',
+        duration: 2000,
+      });
+    }
   };
 
   return (

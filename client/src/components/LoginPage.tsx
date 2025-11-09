@@ -3,16 +3,17 @@ import { Zap, ArrowRight, Sparkles, TrendingUp, FolderKanban } from 'lucide-reac
 import { motion } from 'motion/react';
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (email: string, password: string) => void;
+  loading?: boolean;
 }
 
-export function LoginPage({ onLogin }: LoginPageProps) {
+export function LoginPage({ onLogin, loading = false }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+    onLogin(email, password);
   };
 
   return (
@@ -115,19 +116,29 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign In
-                <ArrowRight className="w-5 h-5" />
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{' '}
-                <button className="text-primary hover:underline">
+                <a href="/signup" className="text-primary hover:underline">
                   Sign up for free
-                </button>
+                </a>
               </p>
             </div>
 
