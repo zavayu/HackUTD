@@ -18,101 +18,101 @@
   - Create database indexes setup script
   - _Requirements: 12.1, 12.2_
 
-- [ ] 3. Implement data models with Mongoose schemas
-  - [ ] 3.1 Create User model with validation
+- [x] 3. Implement data models with Mongoose schemas
+  - [x] 3.1 Create User model with validation
     - Define User schema with email, password, name, githubAccessToken fields
     - Add email uniqueness constraint and validation
     - Implement pre-save hook for password hashing with bcrypt (10 salt rounds)
     - Add method to compare passwords for login
     - _Requirements: 1.1, 1.5, 11.1_
-  - [ ] 3.2 Create Project model with relationships
+  - [x] 3.2 Create Project model with relationships
     - Define Project schema with userId, name, description, status, connectedRepos fields
     - Add indexes on userId and status fields
     - Implement cascade delete for associated issues and sprints
     - _Requirements: 3.1, 3.5_
-  - [ ] 3.3 Create Issue model with embeddings support
+  - [x] 3.3 Create Issue model with embeddings support
     - Define Issue schema with projectId, sprintId, title, description, type, status, priority fields
     - Add acceptanceCriteria array and embeddingId field
     - Add indexes on projectId, sprintId, status, and priority
     - Implement validation for sprint-project relationship
     - _Requirements: 3.2, 3.4, 9.1_
-  - [ ] 3.4 Create Sprint model with date validation
+  - [x] 3.4 Create Sprint model with date validation
     - Define Sprint schema with projectId, name, goal, startDate, endDate, status fields
     - Add validation to ensure endDate is after startDate
     - Add indexes on projectId and status
     - _Requirements: 3.3_
-  - [ ] 3.5 Create GitHubRepo model with nested documents
+  - [x] 3.5 Create GitHubRepo model with nested documents
     - Define GitHubRepo schema with userId, fullName, accessToken, isActive, syncStatus fields
     - Add nested schemas for commits, pullRequests, and issues arrays
     - Implement encryption for accessToken field using crypto module
     - Add indexes on userId, isActive, and fullName (unique)
     - _Requirements: 2.3, 7.3_
 
-- [ ] 4. Implement authentication middleware and utilities
-  - [ ] 4.1 Create JWT utility functions
+- [x] 4. Implement authentication middleware and utilities
+  - [x] 4.1 Create JWT utility functions
     - Implement generateToken function with 24-hour expiration
     - Implement verifyToken function with error handling
     - Add token payload interface with userId and iat claims
     - _Requirements: 1.2_
-  - [ ] 4.2 Create authentication middleware
+  - [x] 4.2 Create authentication middleware
     - Implement verifyToken middleware to extract and validate JWT from Authorization header
     - Attach decoded user information to request object
     - Return 401 error for missing, invalid, or expired tokens
     - _Requirements: 1.3, 1.4_
-  - [ ] 4.3 Create validation middleware factory
+  - [x] 4.3 Create validation middleware factory
     - Implement validateBody, validateParams, validateQuery functions using Joi
     - Return 400 error with field-level validation details
     - Add input sanitization to prevent NoSQL injection
     - _Requirements: 11.1, 11.2, 11.3_
-  - [ ] 4.4 Create rate limiting middleware
+  - [x] 4.4 Create rate limiting middleware
     - Implement rate limiter with configurable window and max requests
     - Use in-memory store for tracking request counts per user
     - Return 429 error when limit exceeded
     - Configure different limits for standard (100/min), AI (10/min), and sync (5/min) endpoints
     - _Requirements: 11.4_
 
-- [ ] 5. Implement repository layer for data access
-  - [ ] 5.1 Create UserRepository
+- [x] 5. Implement repository layer for data access
+  - [x] 5.1 Create UserRepository
     - Implement create, findById, findByEmail, update, delete methods
     - Add error handling for duplicate email constraint
     - _Requirements: 1.1_
-  - [ ] 5.2 Create ProjectRepository
+  - [x] 5.2 Create ProjectRepository
     - Implement create, findById, findByUserId, update, delete, countByUserId methods
     - Add pagination support for findByUserId
     - Filter queries by userId for authorization
     - _Requirements: 3.1, 11.5, 12.1_
-  - [ ] 5.3 Create IssueRepository
+  - [x] 5.3 Create IssueRepository
     - Implement create, findById, findByProjectId, findBySprintId, update, delete, deleteByProjectId methods
     - Add filtering support for status and priority
     - Use lean() for read-only queries
     - _Requirements: 3.2, 3.4, 12.1_
-  - [ ] 5.4 Create SprintRepository
+  - [x] 5.4 Create SprintRepository
     - Implement create, findById, findByProjectId, update, delete, deleteByProjectId methods
     - Add query optimization with select() for minimal fields
     - _Requirements: 3.3_
-  - [ ] 5.5 Create GitHubRepoRepository
+  - [x] 5.5 Create GitHubRepoRepository
     - Implement create, findById, findByUserId, update, delete, findAllActive methods
     - Add decryption logic for accessToken retrieval
     - _Requirements: 2.3, 7.1_
 
-- [ ] 6. Implement core service layer
-  - [ ] 6.1 Create AuthService
+- [x] 6. Implement core service layer
+  - [x] 6.1 Create AuthService
     - Implement register method with password hashing and user creation
     - Implement login method with password verification and JWT generation
     - Add email format validation
     - _Requirements: 1.1, 1.2, 1.5_
-  - [ ] 6.2 Create ProjectService
+  - [x] 6.2 Create ProjectService
     - Implement createProject, getProject, listProjects, updateProject, deleteProject methods
     - Add authorization checks to verify user owns project
     - Implement cascade delete for issues and sprints on project deletion
     - Add pagination support for listProjects
     - _Requirements: 3.1, 3.5, 11.5, 12.3_
-  - [ ] 6.3 Create IssueService
+  - [x] 6.3 Create IssueService
     - Implement createIssue, getIssue, listIssues, updateIssue, deleteIssue, assignToSprint methods
     - Validate sprint belongs to same project when assigning
     - Add filtering by status, priority, and sprint
     - _Requirements: 3.2, 3.4_
-  - [ ] 6.4 Create SprintService
+  - [x] 6.4 Create SprintService
     - Implement createSprint, getSprint, listSprints, updateSprint, deleteSprint, getSprintIssues methods
     - Validate date ranges on creation and update
     - _Requirements: 3.3_
