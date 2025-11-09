@@ -60,10 +60,10 @@ export class GitHubService {
   private readonly baseURL = 'https://api.github.com';
   private readonly maxRetries = 3;
   private readonly initialRetryDelay = 30000; // 30 seconds
-  private gitHubRepoRepository?: GitHubRepoRepository;
+  private gitHubRepoRepository: GitHubRepoRepository | undefined;
 
   constructor(gitHubRepoRepository?: GitHubRepoRepository) {
-    this.gitHubRepoRepository = gitHubRepoRepository;
+    this.gitHubRepoRepository = gitHubRepoRepository || undefined;
   }
 
   /**

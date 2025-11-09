@@ -16,7 +16,7 @@ export function encrypt(text: string, key?: string): string {
     throw new Error('Text to encrypt is required');
   }
 
-  const encryptionKey = key || process.env.ENCRYPTION_KEY;
+  const encryptionKey = key || process.env['ENCRYPTION_KEY'];
   if (!encryptionKey) {
     throw new Error('Encryption key is required');
   }
@@ -29,7 +29,7 @@ export function encrypt(text: string, key?: string): string {
   const derivedKey = crypto.pbkdf2Sync(encryptionKey, salt, 100000, 32, 'sha256');
 
   // Create cipher
-  const cipher = crypto.createCipherGCM(ALGORITHM, derivedKey, iv);
+  const cipher = crypto.createCipheriv(ALGORITHM, derivedKey, iv) as crypto.CipherGCM;
   cipher.setAAD(Buffer.from('prodigypm-github-token'));
 
   // Encrypt the text
@@ -54,7 +54,7 @@ export function decrypt(encryptedData: string, key?: string): string {
     throw new Error('Encrypted data is required');
   }
 
-  const encryptionKey = key || process.env.ENCRYPTION_KEY;
+  const encryptionKey = key || process.env['ENCRYPTION_KEY'];
   if (!encryptionKey) {
     throw new Error('Encryption key is required');
   }
@@ -66,16 +66,16 @@ export function decrypt(encryptedData: string, key?: string): string {
       throw new Error('Invalid encrypted data format');
     }
 
-    const salt = Buffer.from(parts[0], 'hex');
-    const iv = Buffer.from(parts[1], 'hex');
-    const tag = Buffer.from(parts[2], 'hex');
-    const encrypted = parts[3];
+    const salt = Buffer.from(parts[0]!, 'hex');
+    const iv = Buffer.from(parts[1]!, 'hex');
+    const tag = Buffer.from(parts[2]!, 'hex');
+    const encrypted = parts[3]!;
 
     // Derive key from the provided key and salt
     const derivedKey = crypto.pbkdf2Sync(encryptionKey, salt, 100000, 32, 'sha256');
 
     // Create decipher
-    const decipher = crypto.createDecipherGCM(ALGORITHM, derivedKey, iv);
+    const decipher = crypto.createDecipheriv(ALGORITHM, derivedKey, iv) as crypto.DecipherGCM;
     decipher.setAuthTag(tag);
     decipher.setAAD(Buffer.from('prodigypm-github-token'));
 

@@ -20,13 +20,14 @@ export interface AuthenticatedRequest extends Request {
  * Returns 401 error for missing, invalid, or expired tokens
  */
 export const verifyToken = (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): void => {
+  const authenticatedReq = req as AuthenticatedRequest;
   try {
     // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
+    const authHeader = authenticatedReq.headers.authorization;
     const token = JWTUtils.extractTokenFromHeader(authHeader);
 
     if (!token) {
@@ -37,7 +38,7 @@ export const verifyToken = (
     const decoded: TokenPayload = JWTUtils.verifyToken(token);
 
     // Attach user information to request object
-    req.user = {
+    authenticatedReq.user = {
       userId: decoded.userId,
       iat: decoded.iat,
       exp: decoded.exp,

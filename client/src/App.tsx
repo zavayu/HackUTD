@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { ProjectPage } from './pages/ProjectPage';
+import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { Toaster } from 'sonner';
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
                 <Route
                   path="/projects"
                   element={
