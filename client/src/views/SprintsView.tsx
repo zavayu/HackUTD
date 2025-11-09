@@ -13,6 +13,8 @@ interface Sprint {
   goal: string;
   startDate: string;
   endDate: string;
+  actualStartDate?: string;
+  actualEndDate?: string;
   status: 'planned' | 'active' | 'completed';
   stats?: {
     totalIssues: number;
@@ -156,9 +158,15 @@ export function SprintsView({
                       {sprint.status}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {formatDate(sprint.startDate)} - {formatDate(sprint.endDate)}
-                  </p>
+                  <div className="text-xs text-muted-foreground mb-3">
+                    {sprint.status === 'completed' && sprint.actualStartDate && sprint.actualEndDate ? (
+                      <p>{formatDate(sprint.actualStartDate)} - {formatDate(sprint.actualEndDate)}</p>
+                    ) : sprint.status === 'active' && sprint.actualStartDate ? (
+                      <p>{formatDate(sprint.actualStartDate)} - {formatDate(sprint.endDate)}</p>
+                    ) : (
+                      <p>{formatDate(sprint.startDate)} - {formatDate(sprint.endDate)}</p>
+                    )}
+                  </div>
                   {sprint.stats && (
                     <div className="flex items-center gap-2 text-xs">
                       <span className="text-muted-foreground">

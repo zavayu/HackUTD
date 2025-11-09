@@ -9,6 +9,8 @@ export interface Sprint {
   goal: string;
   startDate: string;
   endDate: string;
+  actualStartDate?: string;
+  actualEndDate?: string;
   status: 'planned' | 'active' | 'completed';
   stats?: {
     totalIssues: number;

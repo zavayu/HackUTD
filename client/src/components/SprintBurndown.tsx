@@ -2,28 +2,55 @@ import { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { TrendingDown, Calendar, Target } from 'lucide-react';
 
-const burndownData = [
-  { day: 'Day 1', ideal: 60, actual: 60, date: 'Nov 1' },
-  { day: 'Day 2', ideal: 55, actual: 58, date: 'Nov 2' },
-  { day: 'Day 3', ideal: 50, actual: 55, date: 'Nov 3' },
-  { day: 'Day 4', ideal: 45, actual: 50, date: 'Nov 4' },
-  { day: 'Day 5', ideal: 40, actual: 45, date: 'Nov 5' },
-  { day: 'Day 6', ideal: 35, actual: 38, date: 'Nov 6' },
-  { day: 'Day 7', ideal: 30, actual: 32, date: 'Nov 7' },
-  { day: 'Day 8', ideal: 25, actual: 25, date: 'Nov 8' },
-  { day: 'Day 9', ideal: 20, actual: null, date: 'Nov 9' },
-  { day: 'Day 10', ideal: 15, actual: null, date: 'Nov 10' },
-  { day: 'Day 11', ideal: 10, actual: null, date: 'Nov 11' },
-  { day: 'Day 12', ideal: 5, actual: null, date: 'Nov 12' },
-  { day: 'Day 13', ideal: 2, actual: null, date: 'Nov 13' },
-  { day: 'Day 14', ideal: 0, actual: null, date: 'Nov 14' },
-];
-
 function getCSSVariable(variable: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
 }
 
-export function SprintBurndown() {
+interface SprintBurndownProps {
+  activeSprint: any;
+  backlogItems: any[];
+}
+
+export function SprintBurndown({ activeSprint, backlogItems }: SprintBurndownProps) {
+  if (!activeSprint) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-6">
+        <h3 className="mb-6">Sprint Burndown</h3>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No active sprint</p>
+          <p className="text-sm text-muted-foreground mt-2">Start a sprint to see burndown chart</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate sprint data
+  const sprintItems = backlogItems.filter(item => item.sprintId === activeSprint._id);
+  const totalPoints = sprintItems.reduce((sum, item) => sum + (item.storyPoints || 0), 0);
+  const completedItems = sprintItems.filter(item => item.status === 'done');
+  const completedPoints = completedItems.reduce((sum, item) => sum + (item.storyPoints || 0), 0);
+  const remainingPoints = totalPoints - completedPoints;
+
+  // Calculate days
+  const startDate = new Date(activeSprint.actualStartDate || activeSprint.startDate);
+  const endDate = new Date(activeSprint.endDate);
+  const today = new Date();
+  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const daysElapsed = Math.min(Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)), totalDays);
+  const daysRemaining = Math.max(totalDays - daysElapsed, 0);
+  const completionPercentage = totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0;
+
+  // Generate burndown data
+  const burndownData = [];
+  for (let i = 0; i <= totalDays; i++) {
+    const idealRemaining = totalPoints - (totalPoints / totalDays) * i;
+    const actualRemaining = i <= daysElapsed ? totalPoints - (completedPoints / daysElapsed) * i : null;
+    burndownData.push({
+      day: `Day ${i + 1}`,
+      ideal: Math.max(0, Math.round(idealRemaining)),
+      actual: actualRemaining !== null ? Math.max(0, Math.round(actualRemaining)) : null,
+    });
+  }
   const [chartColors, setChartColors] = useState({
     primary: '#3b82f6',
     muted: '#9ca3af',
@@ -54,24 +81,30 @@ export function SprintBurndown() {
 
     return () => observer.disconnect();
   }, []);
-  const totalPoints = 60;
-  const completedPoints = 35;
-  const remainingPoints = totalPoints - completedPoints;
-  const daysElapsed = 8;
-  const totalDays = 14;
-  const daysRemaining = totalDays - daysElapsed;
-  const completionPercentage = Math.round((completedPoints / totalPoints) * 100);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const isOnTrack = completionPercentage >= (daysElapsed / totalDays) * 100;
 
   return (
     <div className="bg-card border border-border rounded-xl p-6">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h3 className="mb-1">Sprint 23 Burndown</h3>
-          <p className="text-sm text-muted-foreground">Nov 1 - Nov 14, 2025</p>
+          <h3 className="mb-1">{activeSprint.name} Burndown</h3>
+          <p className="text-sm text-muted-foreground">
+            {formatDate(activeSprint.actualStartDate || activeSprint.startDate)} - {formatDate(activeSprint.endDate)}
+          </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 text-green-500 rounded-lg text-sm">
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+          isOnTrack ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-500'
+        }`}>
           <TrendingDown className="w-4 h-4" />
-          On Track
+          {isOnTrack ? 'On Track' : 'Needs Attention'}
         </div>
       </div>
 
@@ -169,14 +202,17 @@ export function SprintBurndown() {
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
-        <p className="text-sm">
-          <span className="text-primary">💡 AI Insight:</span> Your team is tracking 3 points
-          ahead of the ideal burndown. At this pace, you'll complete the sprint{' '}
-          <span>1-2 days early</span>. Consider pulling in 1-2 additional stories from the
-          backlog.
-        </p>
-      </div>
+      {totalPoints > 0 && (
+        <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+          <p className="text-sm">
+            <span className="text-primary">💡 AI Insight:</span>{' '}
+            {isOnTrack 
+              ? `Your team is on track with ${completionPercentage}% completion. Keep up the good work!`
+              : `Your team has completed ${completionPercentage}% with ${daysRemaining} days remaining. Consider reviewing blockers or adjusting scope.`
+            }
+          </p>
+        </div>
+      )}
     </div>
   );
 }

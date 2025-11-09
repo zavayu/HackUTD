@@ -11,6 +11,11 @@ interface SettingsViewProps {
   currentMode: ThemeMode;
   onThemeChange: (theme: string) => void;
   onModeChange: (mode: ThemeMode) => void;
+  projectId?: string;
+  projectName?: string;
+  projectDescription?: string;
+  projectDeadline?: string;
+  onUpdateProject?: (updates: { name?: string; description?: string; deadline?: string }) => void;
 }
 
 export function SettingsView({
@@ -18,13 +23,24 @@ export function SettingsView({
   currentMode,
   onThemeChange,
   onModeChange,
+  projectId,
+  projectName,
+  projectDescription,
+  projectDeadline,
+  onUpdateProject,
 }: SettingsViewProps) {
   const { user } = useUser();
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingProject, setIsEditingProject] = useState(false);
   const [formData, setFormData] = useState({
     name: user.name,
     email: user.email,
     role: user.role,
+  });
+  const [projectFormData, setProjectFormData] = useState({
+    name: projectName || '',
+    description: projectDescription || '',
+    deadline: projectDeadline || '',
   });
 
   const handleSave = () => {
@@ -43,6 +59,26 @@ export function SettingsView({
       role: user.role,
     });
     setIsEditing(false);
+  };
+
+  const handleSaveProject = () => {
+    if (onUpdateProject) {
+      onUpdateProject({
+        name: projectFormData.name,
+        description: projectFormData.description,
+        deadline: projectFormData.deadline || undefined,
+      });
+    }
+    setIsEditingProject(false);
+  };
+
+  const handleCancelProject = () => {
+    setProjectFormData({
+      name: projectName || '',
+      description: projectDescription || '',
+      deadline: projectDeadline || '',
+    });
+    setIsEditingProject(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -66,6 +102,95 @@ export function SettingsView({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Account Settings */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Project Settings (only show if in project context) */}
+          {projectId && (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Project Settings</h2>
+                {!isEditingProject ? (
+                  <button
+                    onClick={() => setIsEditingProject(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Edit Project
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCancelProject}
+                      className="px-4 py-2 bg-accent text-foreground rounded-lg hover:bg-accent/80 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveProject}
+                      className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+                    >
+                      <Save className="w-4 h-4" />
+                      Save Changes
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium mb-2">
+                    <Briefcase className="w-4 h-4 text-muted-foreground" />
+                    Project Name
+                  </label>
+                  {isEditingProject ? (
+                    <input
+                      type="text"
+                      value={projectFormData.name}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, name: e.target.value })}
+                      className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  ) : (
+                    <p className="px-4 py-2 bg-accent/50 rounded-lg">{projectName}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium mb-2">
+                    <Edit2 className="w-4 h-4 text-muted-foreground" />
+                    Description
+                  </label>
+                  {isEditingProject ? (
+                    <textarea
+                      value={projectFormData.description}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, description: e.target.value })}
+                      className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                      rows={3}
+                    />
+                  ) : (
+                    <p className="px-4 py-2 bg-accent/50 rounded-lg">{projectDescription || 'No description'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium mb-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    Project Deadline
+                  </label>
+                  {isEditingProject ? (
+                    <input
+                      type="date"
+                      value={projectFormData.deadline ? new Date(projectFormData.deadline).toISOString().split('T')[0] : ''}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, deadline: e.target.value })}
+                      className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  ) : (
+                    <p className="px-4 py-2 bg-accent/50 rounded-lg">
+                      {projectDeadline ? formatDate(projectDeadline) : 'No deadline set'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Profile Section */}
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">

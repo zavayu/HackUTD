@@ -43,6 +43,7 @@ interface FrontendProject {
   name: string;
   color: string;
   description?: string;
+  deadline?: string;
   members?: Array<{
     userId: string;
     email: string;
@@ -62,6 +63,7 @@ const mapApiProjectToFrontend = (project: ApiProject, index: number): FrontendPr
   name: project.name,
   color: ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500'][index % 4],
   description: project.description,
+  deadline: (project as any).deadline,
   members: (project as any).members || [],
   stats: project.stats,
 });
@@ -430,6 +432,23 @@ export function ProjectPage() {
     }
   };
 
+  const handleUpdateProject = async (updates: { name?: string; description?: string; deadline?: string }) => {
+    try {
+      const response = await projectService.updateProject(projectId!, updates);
+      if (response.success) {
+        toast.success('Project updated!', {
+          duration: 2000,
+        });
+        await loadProjectData();
+      }
+    } catch (error: any) {
+      toast.error('Failed to update project', {
+        description: error.message,
+        duration: 3000,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -492,6 +511,7 @@ export function ProjectPage() {
       onEditStory={handleEditStory}
       onAssignStory={handleAssignStory}
       onDeleteStory={handleDeleteStory}
+      onUpdateProject={handleUpdateProject}
     />
   );
 }

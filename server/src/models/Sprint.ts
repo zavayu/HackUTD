@@ -6,6 +6,8 @@ export interface ISprint extends Document {
   goal: string;
   startDate: Date;
   endDate: Date;
+  actualStartDate?: Date;
+  actualEndDate?: Date;
   status: 'planned' | 'active' | 'completed';
   createdAt: Date;
   updatedAt: Date;
@@ -37,6 +39,14 @@ const SprintSchema = new Schema<ISprint>({
   endDate: {
     type: Date,
     required: [true, 'End date is required']
+  },
+  actualStartDate: {
+    type: Date,
+    required: false
+  },
+  actualEndDate: {
+    type: Date,
+    required: false
   },
   status: {
     type: String,

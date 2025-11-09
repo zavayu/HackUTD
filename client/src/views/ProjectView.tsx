@@ -59,6 +59,7 @@ interface ProjectViewProps {
   onEditStory: (storyId: string, updates: any) => void;
   onAssignStory: (storyId: string, assignee: string) => void;
   onDeleteStory: (storyId: string) => void;
+  onUpdateProject: (updates: { name?: string; description?: string; deadline?: string }) => void;
 }
 
 export function ProjectView({
@@ -95,6 +96,7 @@ export function ProjectView({
   onEditStory,
   onAssignStory,
   onDeleteStory,
+  onUpdateProject,
 }: ProjectViewProps) {
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -121,6 +123,9 @@ export function ProjectView({
                 projects={projects}
                 theme={theme}
                 ownerEmail={ownerEmail}
+                backlogItems={backlogItems}
+                sprints={sprints}
+                activeSprint={activeSprint}
                 onProjectChange={onProjectChange}
                 onThemeChange={onThemeChange}
                 onTabChange={onTabChange}
@@ -191,6 +196,11 @@ export function ProjectView({
                 currentMode={themeMode}
                 onThemeChange={onThemeChange}
                 onModeChange={onThemeModeChange}
+                projectId={selectedProject.id}
+                projectName={selectedProject.name}
+                projectDescription={selectedProject.description}
+                projectDeadline={(selectedProject as any).deadline}
+                onUpdateProject={onUpdateProject}
               />
             )}
           </div>

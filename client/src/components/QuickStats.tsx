@@ -3,25 +3,38 @@ import { Project } from '../types';
 
 interface QuickStatsProps {
   project: Project;
+  totalStories: number;
+  completedStories: number;
+  velocity: number;
+  sprintProgress: number;
+  activeSprint: any;
   onManageTeam?: () => void;
 }
 
-export function QuickStats({ project, onManageTeam }: QuickStatsProps) {
+export function QuickStats({ 
+  project, 
+  totalStories,
+  completedStories,
+  velocity,
+  sprintProgress,
+  activeSprint,
+  onManageTeam 
+}: QuickStatsProps) {
   const memberCount = (project.members?.length || 0) + 1; // +1 for owner
   
   const stats = [
     {
       label: 'Team Velocity',
-      value: '60 pts',
-      change: '+8%',
-      trend: 'up',
+      value: velocity > 0 ? `${velocity} stories` : 'No data',
+      change: velocity > 0 ? 'Last sprint' : 'Complete a sprint',
+      trend: velocity > 0 ? 'up' : 'neutral',
       icon: Zap,
     },
     {
-      label: 'Sprint Goal',
-      value: '58%',
-      change: 'On track',
-      trend: 'neutral',
+      label: 'Sprint Progress',
+      value: activeSprint ? `${sprintProgress}%` : 'No sprint',
+      change: activeSprint ? (sprintProgress >= 50 ? 'On track' : 'Needs attention') : 'Start a sprint',
+      trend: activeSprint ? (sprintProgress >= 50 ? 'up' : 'down') : 'neutral',
       icon: Target,
     },
     {
@@ -34,8 +47,8 @@ export function QuickStats({ project, onManageTeam }: QuickStatsProps) {
     },
     {
       label: 'Completed Stories',
-      value: project.stats?.stories.toString() || '0',
-      change: 'Total stories',
+      value: completedStories.toString(),
+      change: `${totalStories} total`,
       trend: 'neutral',
       icon: Trophy,
     },

@@ -26,6 +26,7 @@ router.get('/', async (req: Request, res: Response) => {
           _id: project._id,
           name: project.name,
           description: project.description,
+          deadline: project.deadline,
           status: project.status,
           members: project.members || [],
           stats: {
@@ -76,6 +77,7 @@ router.get('/:projectId', async (req: Request, res: Response) => {
         _id: project._id,
         name: project.name,
         description: project.description,
+        deadline: project.deadline,
         status: project.status,
         members: project.members || [],
         stats: {
@@ -101,7 +103,7 @@ router.get('/:projectId', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
-    const { name, description } = req.body;
+    const { name, description, deadline } = req.body;
 
     if (!name) {
       return res.status(400).json({
@@ -114,6 +116,7 @@ router.post('/', async (req: Request, res: Response) => {
       userId,
       name,
       description: description || '',
+      deadline: deadline ? new Date(deadline) : undefined,
       status: 'active',
     });
 
@@ -126,6 +129,7 @@ router.post('/', async (req: Request, res: Response) => {
         _id: project._id,
         name: project.name,
         description: project.description,
+        deadline: project.deadline,
         status: project.status,
         stats: {
           stories: 0,
@@ -151,7 +155,7 @@ router.put('/:projectId', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
     const { projectId } = req.params;
-    const { name, description, status } = req.body;
+    const { name, description, status, deadline } = req.body;
 
     const project = await Project.findOne({ _id: projectId, userId });
 
@@ -165,6 +169,13 @@ router.put('/:projectId', async (req: Request, res: Response) => {
     if (name) project.name = name;
     if (description !== undefined) project.description = description;
     if (status) project.status = status;
+    if (deadline !== undefined) {
+      if (deadline) {
+        project.deadline = new Date(deadline);
+      } else {
+        project.deadline = undefined as any;
+      }
+    }
 
     await project.save();
 
@@ -177,6 +188,7 @@ router.put('/:projectId', async (req: Request, res: Response) => {
         _id: project._id,
         name: project.name,
         description: project.description,
+        deadline: project.deadline,
         status: project.status,
         stats: {
           stories: storyCount,

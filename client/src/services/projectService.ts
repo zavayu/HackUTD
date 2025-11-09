@@ -6,6 +6,7 @@ export interface Project {
   _id: string;
   name: string;
   description: string;
+  deadline?: string;
   status: 'active' | 'archived';
   stats: {
     stories: number;
@@ -70,16 +71,16 @@ class ProjectService {
     return this.request<ApiResponse<Project>>(`/projects/${projectId}`);
   }
 
-  async createProject(name: string, description?: string): Promise<ApiResponse<Project>> {
+  async createProject(name: string, description?: string, deadline?: string): Promise<ApiResponse<Project>> {
     return this.request<ApiResponse<Project>>('/projects', {
       method: 'POST',
-      body: JSON.stringify({ name, description }),
+      body: JSON.stringify({ name, description, deadline }),
     });
   }
 
   async updateProject(
     projectId: string,
-    updates: { name?: string; description?: string; status?: string }
+    updates: { name?: string; description?: string; deadline?: string; status?: string }
   ): Promise<ApiResponse<Project>> {
     return this.request<ApiResponse<Project>>(`/projects/${projectId}`, {
       method: 'PUT',

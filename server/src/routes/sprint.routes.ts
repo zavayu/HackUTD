@@ -203,6 +203,7 @@ router.post('/:sprintId/start', async (req: Request, res: Response) => {
     }
 
     sprint.status = 'active';
+    sprint.actualStartDate = new Date();
     await sprint.save();
 
     return res.status(200).json({
@@ -244,6 +245,7 @@ router.post('/:sprintId/complete', async (req: Request, res: Response) => {
     }
 
     sprint.status = 'completed';
+    sprint.actualEndDate = new Date();
     await sprint.save();
 
     // Move incomplete issues back to backlog
