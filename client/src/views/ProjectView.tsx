@@ -11,6 +11,20 @@ import { SettingsView } from './SettingsView';
 import { Plus } from 'lucide-react';
 import { Project, BacklogItem, TabType } from '../types';
 
+interface Sprint {
+  _id: string;
+  name: string;
+  goal: string;
+  startDate: string;
+  endDate: string;
+  status: 'planned' | 'active' | 'completed';
+  stats?: {
+    totalIssues: number;
+    completedIssues: number;
+    completionRate: number;
+  };
+}
+
 interface ProjectViewProps {
   activeTab: string;
   aiCopilotOpen: boolean;
@@ -20,6 +34,8 @@ interface ProjectViewProps {
   backlogItems: BacklogItem[];
   selectedProject: Project;
   projects: Project[];
+  sprints: Sprint[];
+  activeSprint: Sprint | null;
   onTabChange: (tab: string) => void;
   onAICopilotToggle: () => void;
   onNewStoryModalToggle: () => void;
@@ -32,6 +48,11 @@ interface ProjectViewProps {
   onApplyAIChanges: (changes: any) => void;
   onAISuggestion: (type: string) => void;
   onItemMove: (itemId: string, newStatus: string) => void;
+  onCreateSprint: () => void;
+  onStartSprint: (sprintId: string) => void;
+  onCompleteSprint: (sprintId: string) => void;
+  onAddIssuesToSprint: (sprintId: string, issueIds: string[]) => void;
+  onRemoveIssueFromSprint: (sprintId: string, issueId: string) => void;
 }
 
 export function ProjectView({
@@ -43,6 +64,8 @@ export function ProjectView({
   backlogItems,
   selectedProject,
   projects,
+  sprints,
+  activeSprint,
   onTabChange,
   onAICopilotToggle,
   onNewStoryModalToggle,
@@ -55,6 +78,11 @@ export function ProjectView({
   onApplyAIChanges,
   onAISuggestion,
   onItemMove,
+  onCreateSprint,
+  onStartSprint,
+  onCompleteSprint,
+  onAddIssuesToSprint,
+  onRemoveIssueFromSprint,
 }: ProjectViewProps) {
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -104,11 +132,23 @@ export function ProjectView({
                 onItemMove={onItemMove}
                 onNewStoryClick={onNewStoryModalToggle}
                 onTabChange={onTabChange}
+                activeSprint={activeSprint}
               />
             )}
 
             {activeTab === 'sprints' && (
-              <SprintsView backlogItems={backlogItems} />
+              <SprintsView 
+                theme={theme}
+                backlogItems={backlogItems}
+                sprints={sprints}
+                activeSprint={activeSprint}
+                onThemeChange={onThemeChange}
+                onCreateSprint={onCreateSprint}
+                onStartSprint={onStartSprint}
+                onCompleteSprint={onCompleteSprint}
+                onAddIssuesToSprint={onAddIssuesToSprint}
+                onRemoveIssueFromSprint={onRemoveIssueFromSprint}
+              />
             )}
 
             {activeTab === 'insights' && (

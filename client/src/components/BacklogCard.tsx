@@ -9,6 +9,7 @@ export interface BacklogItem {
   tags: string[];
   priority: 'high' | 'medium' | 'low';
   progress: number;
+  status: 'backlog' | 'todo' | 'in_progress' | 'done';
   assignee?: string;
   storyPoints?: number;
 }
