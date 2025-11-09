@@ -26,8 +26,7 @@ const IssueSchema = new Schema<IIssue>({
   },
   sprintId: {
     type: Schema.Types.ObjectId,
-    ref: 'Sprint',
-    index: true
+    ref: 'Sprint'
   },
   title: {
     type: String,

@@ -3,6 +3,8 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import authRoutes from './routes/auth.routes';
+import projectRoutes from './routes/project.routes';
+import issueRoutes from './routes/issue.routes';
 
 // Load environment variables
 dotenv.config();
@@ -24,6 +26,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/issues', issueRoutes);
 
 // Health check
 app.get('/health', (_req, res) => {
