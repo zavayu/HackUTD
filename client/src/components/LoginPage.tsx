@@ -30,7 +30,7 @@ export function LoginPage({ onLogin, loading = false }: LoginPageProps) {
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-2xl">
               <Zap className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-foreground">AI ProductHub</h1>
+            <h1 className="text-foreground">ProdigyPM</h1>
           </div>
           
           <h2 className="mb-4 text-foreground">

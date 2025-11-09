@@ -70,7 +70,7 @@ export function SignUpPage({ onSignUp, loading = false }: SignUpPageProps) {
               fontWeight: '700',
               color: '#1f2937',
               margin: 0
-            }}>AI ProductHub</h1>
+            }}>ProdigyPM</h1>
           </div>
           
           <h2 style={{
@@ -141,7 +141,7 @@ export function SignUpPage({ onSignUp, loading = false }: SignUpPageProps) {
             <p style={{
               color: '#6b7280',
               marginBottom: '1.5rem'
-            }}>Get started with AI ProductHub today</p>
+            }}>Get started with ProdigyPM today</p>
 
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '1rem' }}>

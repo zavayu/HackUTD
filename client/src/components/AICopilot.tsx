@@ -5,11 +5,14 @@ import { ScrollArea } from './ui/scroll-area';
 import { useGitHub } from './GitHubContext';
 import { GitHubAIInsights } from './GitHubAIInsights';
 
+import { copilotService, QuickSuggestion } from '../services/copilotService';
+
 interface AICopilotProps {
   isOpen: boolean;
   onClose: () => void;
   onPromptClick: (prompt: string) => void;
   onApplyChanges?: (changes: any) => void;
+  projectId: string;
 }
 
 interface Message {
@@ -19,7 +22,7 @@ interface Message {
   hasActions?: boolean;
 }
 
-export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges }: AICopilotProps) {
+export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges, projectId }: AICopilotProps) {
   const { isConnected, commits, pullRequests } = useGitHub();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -32,6 +35,8 @@ export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges }: AI
   ]);
   const [input, setInput] = useState('');
   const [showGitHubInsights, setShowGitHubInsights] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<QuickSuggestion[]>([]);
 
   const quickPrompts = [
     {
@@ -51,17 +56,17 @@ export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges }: AI
     },
     ...(isConnected
       ? [
-          {
-            icon: Github,
-            label: 'Analyze GitHub activity',
-            prompt: 'Analyze recent commits and PRs to suggest next sprint tasks',
-          },
-        ]
+        {
+          icon: Github,
+          label: 'Analyze GitHub activity',
+          prompt: 'Analyze recent commits and PRs to suggest next sprint tasks',
+        },
+      ]
       : []),
   ];
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -72,33 +77,34 @@ export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges }: AI
     setMessages((prev) => [...prev, userMessage]);
     const currentInput = input;
     setInput('');
+    setLoading(true);
 
-    // Simulate AI response with GitHub context
-    setTimeout(() => {
-      let responseContent = `I've analyzed your request: "${currentInput}". Here are my recommendations:\n\n`;
+    try {
+      // Get conversation history
+      const history = messages.map(m => ({ role: m.role, content: m.content }));
 
-      if (isConnected && currentInput.toLowerCase().includes('github')) {
-        responseContent += `Based on ${commits.length} recent commits and ${pullRequests.filter((pr) => pr.state === 'open').length} open PRs:\n\n`;
-        responseContent += `• ${commits.filter((c) => c.message.startsWith('feat:')).length} new features in progress\n`;
-        responseContent += `• ${commits.filter((c) => c.message.startsWith('fix:')).length} bug fixes completed\n`;
-        responseContent += `• Consider creating stories for the ${pullRequests.filter((pr) => pr.state === 'open').length} pending PRs\n`;
-        responseContent += `• High commit velocity detected - team is performing well\n\n`;
-      } else {
-        responseContent += `• Reprioritize 3 high-value stories to the top\n`;
-        responseContent += `• Move 2 blocked tasks to review\n`;
-        responseContent += `• Suggest breaking down 1 large story into smaller chunks\n\n`;
-      }
-
-      responseContent += `Would you like me to apply these changes to your backlog?`;
+      // Call AI Copilot API
+      const response = await copilotService.chat(projectId, currentInput, history);
 
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: responseContent,
-        hasActions: true,
+        content: response.message,
+        hasActions: response.suggestions && response.suggestions.length > 0,
       };
+
       setMessages((prev) => [...prev, aiResponse]);
-    }, 800);
+    } catch (error) {
+      console.error('AI Copilot error:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleApplyChanges = () => {
@@ -135,7 +141,7 @@ export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges }: AI
             </button>
           </div>
 
-          <div className="p-4 bg-accent/30 border-b border-border">
+          <div className="p-4 bg-accent/30 border-b border-border flex-shrink-0">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-muted-foreground">Quick Actions</p>
               {isConnected && (
@@ -148,7 +154,7 @@ export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges }: AI
                 </button>
               )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
               {quickPrompts.map((prompt) => {
                 const Icon = prompt.icon;
                 return (
@@ -170,7 +176,7 @@ export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges }: AI
             </div>
           </div>
 
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-4 overflow-y-auto">
             {showGitHubInsights && isConnected ? (
               <GitHubAIInsights />
             ) : (
@@ -181,11 +187,10 @@ export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges }: AI
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-xl p-3 ${
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-accent'
-                      }`}
+                      className={`max-w-[85%] rounded-xl p-3 ${message.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-accent'
+                        }`}
                     >
                       <p className="text-sm whitespace-pre-line">{message.content}</p>
                       {message.hasActions && message.role === 'assistant' && (
@@ -200,25 +205,42 @@ export function AICopilot({ isOpen, onClose, onPromptClick, onApplyChanges }: AI
                     </div>
                   </div>
                 ))}
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] rounded-xl p-3 bg-accent">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </ScrollArea>
 
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border flex-shrink-0">
             <div className="flex gap-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                onKeyDown={(e) => e.key === 'Enter' && !loading && handleSend()}
                 placeholder="Ask AI anything..."
-                className="flex-1 px-4 py-2 bg-accent border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                disabled={loading}
+                className="flex-1 px-4 py-2 bg-accent border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
               />
               <button
                 onClick={handleSend}
-                className="w-10 h-10 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center"
+                disabled={loading || !input.trim()}
+                className="w-10 h-10 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send className="w-4 h-4" />
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>

@@ -208,47 +208,53 @@ export function GitHubConnectionModal({ isOpen, onClose, projectId }: GitHubConn
             // Connected Repositories
             <>
               {/* Add New Repository */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Select Repository to Connect</label>
-                <div className="flex gap-2">
-                  <select
-                    value={selectedAvailableRepo}
-                    onChange={(e) => setSelectedAvailableRepo(e.target.value)}
-                    className="flex-1 px-4 py-2 bg-input-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                  >
-                    <option value="">Choose a repository...</option>
-                    {availableRepos
-                      .filter(repo => !connectedRepos.some(cr => cr.repoFullName === repo.full_name))
-                      .map((repo) => (
-                        <option key={repo.id} value={repo.full_name}>
-                          {repo.full_name} {repo.private ? '🔒' : ''}
-                          {repo.language ? ` • ${repo.language}` : ''}
-                        </option>
-                      ))}
-                  </select>
-                  <Button 
-                    onClick={handleConnectRepo} 
-                    disabled={connecting || !selectedAvailableRepo}
-                  >
-                    {connecting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      'Connect'
-                    )}
-                  </Button>
-                </div>
+              <div className="space-y-3 p-4 bg-accent/30 rounded-xl border border-border">
+                <label className="text-sm font-medium">Connect a New Repository</label>
+                <select
+                  value={selectedAvailableRepo}
+                  onChange={(e) => setSelectedAvailableRepo(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all text-base"
+                >
+                  <option value="">Choose a repository...</option>
+                  {availableRepos
+                    .filter(repo => !connectedRepos.some(cr => cr.repoFullName === repo.full_name))
+                    .map((repo) => (
+                      <option key={repo.id} value={repo.full_name}>
+                        {repo.full_name} {repo.private ? '🔒' : ''}
+                        {repo.language ? ` • ${repo.language}` : ''}
+                      </option>
+                    ))}
+                </select>
                 {selectedAvailableRepo && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground px-1">
                     {availableRepos.find(r => r.full_name === selectedAvailableRepo)?.description || 'No description'}
                   </p>
                 )}
+                <Button 
+                  onClick={handleConnectRepo} 
+                  disabled={connecting || !selectedAvailableRepo}
+                  className="w-full py-6 text-base font-medium"
+                  size="lg"
+                >
+                  {connecting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <Github className="w-5 h-5 mr-2" />
+                      Connect Repository
+                    </>
+                  )}
+                </Button>
               </div>
 
               {/* Connected Repositories List */}
               {connectedRepos.length > 0 ? (
                 <>
-                  <div className="text-sm font-medium">Your Connected Repositories</div>
-                  <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                  <div className="text-sm font-medium pt-2">Your Connected Repositories</div>
+                  <div className="flex-1 overflow-y-auto space-y-3 pr-2 pb-2">
                     {connectedRepos.map((repo) => (
                       <div
                         key={repo._id}

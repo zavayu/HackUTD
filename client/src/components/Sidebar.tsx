@@ -46,7 +46,7 @@ export function Sidebar({ activeTab, onTabChange, currentProject, projects = [],
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Zap className="w-5 h-5 text-white" />
           </div>
-          <span>AI ProductHub</span>
+          <span>ProdigyPM</span>
         </h2>
         {currentProject && (
           <p className="text-xs text-muted-foreground mt-1 ml-10">{currentProject.name}</p>

@@ -11,6 +11,8 @@ import authRoutes from './routes/auth.routes';
 import githubRoutes from './routes/github';
 import projectRoutes from './routes/project.routes';
 import issueRoutes from './routes/issue.routes';
+import insightsRoutes from './routes/insights.routes';
+import copilotRoutes from './routes/copilot.routes';
 import sprintRoutes from './routes/sprint.routes';
 import aiRoutes from './routes/ai.routes';
 
@@ -33,6 +35,8 @@ app.use(passport.initialize());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/projects/:projectId/github', githubRoutes); // Mount github routes with projectId
+app.use('/api/projects', insightsRoutes); // Mount insights routes
+app.use('/api/projects', copilotRoutes); // Mount copilot routes
 app.use('/api/projects', projectRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/sprints', sprintRoutes);

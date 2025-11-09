@@ -88,7 +88,11 @@ export class IssueService {
         throw new NotFoundError('Project');
       }
 
-      if (project.userId.toString() !== userId) {
+      // Check if user is owner or member
+      const isOwner = project.userId.toString() === userId;
+      const isMember = project.members?.some((member: any) => member.userId.toString() === userId);
+      
+      if (!isOwner && !isMember) {
         throw new AuthorizationError('You do not have permission to create issues in this project');
       }
 
@@ -155,7 +159,11 @@ export class IssueService {
         throw new NotFoundError('Project');
       }
 
-      if (project.userId.toString() !== userId) {
+      // Check if user is owner or member
+      const isOwner = project.userId.toString() === userId;
+      const isMember = project.members?.some((member: any) => member.userId.toString() === userId);
+      
+      if (!isOwner && !isMember) {
         throw new AuthorizationError('You do not have permission to access this issue');
       }
 
@@ -187,7 +195,15 @@ export class IssueService {
         throw new NotFoundError('Project');
       }
 
-      if (project.userId.toString() !== userId) {
+      // Check if user is owner or member
+      const projectOwnerId = project.userId?.toString() || project.userId;
+      const isOwner = projectOwnerId === userId || projectOwnerId === userId.toString();
+      const isMember = project.members?.some((member: any) => {
+        const memberId = member.userId?.toString() || member.userId;
+        return memberId === userId || memberId === userId.toString();
+      });
+      
+      if (!isOwner && !isMember) {
         throw new AuthorizationError('You do not have permission to access issues in this project');
       }
 
