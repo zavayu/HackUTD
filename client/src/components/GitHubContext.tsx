@@ -50,7 +50,7 @@ interface GitHubContextType {
   commits: GitHubCommit[];
   pullRequests: GitHubPR[];
   metrics: GitHubMetrics | null;
-  connectGitHub: (repo: GitHubRepo, repoId?: string) => void;
+  connectGitHub: (repo: GitHubRepo, repoId?: string, projectId?: string) => void;
   disconnectGitHub: () => void;
   refreshData: () => void;
 }
@@ -190,7 +190,7 @@ const mockMetrics: GitHubMetrics = {
   activeContributors: 8,
 };
 
-export function GitHubProvider({ children }: { children: ReactNode }) {
+export function GitHubProvider({ children, projectId }: { children: ReactNode; projectId?: string }) {
   const [isConnected, setIsConnected] = useState(false);
   const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
   const [repositories] = useState<GitHubRepo[]>(mockRepositories);
@@ -198,6 +198,7 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
   const [pullRequests, setPullRequests] = useState<GitHubPR[]>([]);
   const [metrics, setMetrics] = useState<GitHubMetrics | null>(null);
   const [repoId, setRepoId] = useState<string | null>(null);
+  const [currentProjectId, setCurrentProjectId] = useState<string | undefined>(projectId);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -208,9 +209,13 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
       setSelectedRepo(data.repo);
       setRepoId(data.repoId);
       
-      // Fetch real data if we have a repoId
-      if (data.repoId) {
-        fetchRepoData(data.repoId);
+      // Use projectId from props or saved data
+      const pid = projectId || data.projectId;
+      if (pid) setCurrentProjectId(pid);
+      
+      // Fetch real data if we have both repoId and projectId
+      if (data.repoId && pid) {
+        fetchRepoData(data.repoId, pid);
       } else {
         // Fallback to mock data
         setCommits(mockCommits);
@@ -218,12 +223,18 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
         setMetrics(mockMetrics);
       }
     }
-  }, []);
+  }, [projectId]);
 
-  const fetchRepoData = async (id: string) => {
+  const fetchRepoData = async (id: string, projId?: string) => {
+    const pid = projId || currentProjectId;
+    if (!pid) {
+      console.error('No project ID available for fetching repo data');
+      return;
+    }
+    
     try {
       const { api } = await import('../services/api');
-      const response = await api.getGitHubRepoData(id);
+      const response = await api.getGitHubRepoData(pid, id);
       
       if (response.success && response.data) {
         const data = response.data;
@@ -286,10 +297,12 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const connectGitHub = (repo: GitHubRepo, id?: string) => {
+  const connectGitHub = (repo: GitHubRepo, id?: string, projId?: string) => {
+    const pid = projId || currentProjectId;
     setIsConnected(true);
     setSelectedRepo(repo);
     setRepoId(id || null);
+    if (pid) setCurrentProjectId(pid);
 
     // Save to localStorage
     localStorage.setItem(
@@ -297,13 +310,14 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
       JSON.stringify({
         repo,
         repoId: id,
+        projectId: pid,
         timestamp: new Date().toISOString(),
       })
     );
     
-    // Fetch real data if we have a repoId
-    if (id) {
-      fetchRepoData(id);
+    // Fetch real data if we have a repoId and projectId
+    if (id && pid) {
+      fetchRepoData(id, pid);
     } else {
       setCommits(mockCommits);
       setPullRequests(mockPullRequests);
@@ -322,8 +336,8 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshData = async () => {
-    if (repoId) {
-      await fetchRepoData(repoId);
+    if (repoId && currentProjectId) {
+      await fetchRepoData(repoId, currentProjectId);
     } else {
       // Fallback to mock data
       setCommits(mockCommits);

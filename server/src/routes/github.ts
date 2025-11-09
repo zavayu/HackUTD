@@ -12,7 +12,7 @@ import {
 } from '../utils/errors';
 import Joi from 'joi';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Initialize repositories and service
 const gitHubRepoRepository = new GitHubRepoRepository();
@@ -40,7 +40,7 @@ const repoIdSchema = Joi.object({
 
 /**
  * Get user's GitHub repositories from GitHub API
- * GET /api/github/available-repos
+ * GET /api/projects/:projectId/github/available-repos
  */
 router.get('/available-repos', verifyToken, async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -102,20 +102,39 @@ router.get('/available-repos', verifyToken, async (req: any, res: Response, next
 });
 
 /**
- * Get user's connected repositories
- * GET /api/github/repos
+ * Get project's connected repositories
+ * GET /api/projects/:projectId/github/repos
  */
 router.get('/repos', verifyToken, async (req: any, res: Response, next: NextFunction) => {
   try {
     const userId = req.user.userId;
+    const projectId = req.params['projectId']!;
 
-    logger.info('Getting user repositories', { userId });
+    logger.info('Getting project repositories', { userId, projectId });
 
-    const repos = await gitHubRepoRepository.findByUserId(userId);
+    const repos = await gitHubRepoRepository.findByProjectId(projectId);
+
+    // Transform repos to match frontend expectations
+    const transformedRepos = repos.map(repo => {
+      const [owner, name] = repo.fullName.split('/');
+      return {
+        _id: repo._id,
+        userId: repo.userId,
+        projectId: repo.projectId,
+        repoFullName: repo.fullName,
+        repoId: 0,
+        repoName: name,
+        repoOwner: owner,
+        repoDescription: '',
+        repoLanguage: '',
+        isActive: repo.isActive,
+        lastSyncedAt: repo.lastSyncTime?.toISOString()
+      };
+    });
 
     res.json({
       success: true,
-      data: repos
+      data: transformedRepos
     });
 
   } catch (error) {
@@ -128,8 +147,8 @@ router.get('/repos', verifyToken, async (req: any, res: Response, next: NextFunc
 });
 
 /**
- * Connect a new repository
- * POST /api/github/repos/connect
+ * Connect a new repository to a project
+ * POST /api/projects/:projectId/github/repos/connect
  */
 router.post('/repos/connect',
   verifyToken,
@@ -137,9 +156,10 @@ router.post('/repos/connect',
   async (req: any, res: Response, next: NextFunction) => {
     try {
       const userId = req.user.userId;
+      const projectId = req.params['projectId']!;
       const { repoFullName } = req.body;
 
-      logger.info('Connecting repository', { userId, repo: repoFullName });
+      logger.info('Connecting repository to project', { userId, projectId, repo: repoFullName });
 
       // Get user's GitHub access token
       const user = await userRepository.findById(userId);
@@ -150,13 +170,29 @@ router.post('/repos/connect',
       // Decrypt the access token
       const accessToken = decrypt(user.githubAccessToken);
 
-      // Connect the repository
-      const repo = await gitHubService.connectRepository(userId, repoFullName, accessToken);
+      // Connect the repository to the project
+      const repo = await gitHubService.connectRepository(userId, projectId, repoFullName, accessToken);
+
+      // Transform response to match frontend expectations
+      const [owner, name] = repoFullName.split('/');
+      const transformedRepo = {
+        _id: repo._id,
+        userId: repo.userId,
+        projectId: repo.projectId,
+        repoFullName: repo.fullName,
+        repoId: 0, // GitHub repo ID would need to be fetched from API
+        repoName: name,
+        repoOwner: owner,
+        repoDescription: '',
+        repoLanguage: '',
+        isActive: repo.isActive,
+        lastSyncedAt: repo.lastSyncTime?.toISOString()
+      };
 
       res.status(201).json({
         success: true,
         message: 'Repository connected successfully',
-        data: repo
+        data: transformedRepo
       });
 
     } catch (error) {
@@ -172,7 +208,7 @@ router.post('/repos/connect',
 
 /**
  * Disconnect a repository
- * DELETE /api/github/repos/:id
+ * DELETE /api/projects/:projectId/github/repos/:id
  */
 router.delete('/repos/:id',
   verifyToken,
@@ -215,7 +251,7 @@ router.delete('/repos/:id',
 
 /**
  * Trigger manual sync for a repository
- * POST /api/github/repos/:id/sync
+ * POST /api/projects/:projectId/github/repos/:id/sync
  */
 router.post('/repos/:id/sync',
   verifyToken,
@@ -259,7 +295,7 @@ router.post('/repos/:id/sync',
 
 /**
  * Get synced repository data
- * GET /api/github/repos/:id/data
+ * GET /api/projects/:projectId/github/repos/:id/data
  */
 router.get('/repos/:id/data',
   verifyToken,

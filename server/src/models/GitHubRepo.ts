@@ -34,6 +34,7 @@ export interface IGitHubIssue {
 
 export interface IGitHubRepo extends Document {
   userId: mongoose.Types.ObjectId;
+  projectId: mongoose.Types.ObjectId;
   fullName: string;
   accessToken: string;
   isActive: boolean;
@@ -164,6 +165,12 @@ const GitHubRepoSchema = new Schema<IGitHubRepo>({
     required: [true, 'User ID is required'],
     index: true
   },
+  projectId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Project',
+    required: [true, 'Project ID is required'],
+    index: true
+  },
   fullName: {
     type: String,
     required: [true, 'Repository full name is required'],
@@ -211,6 +218,8 @@ const GitHubRepoSchema = new Schema<IGitHubRepo>({
 
 // Compound indexes for efficient queries
 GitHubRepoSchema.index({ userId: 1, isActive: 1 });
+GitHubRepoSchema.index({ projectId: 1, isActive: 1 });
+GitHubRepoSchema.index({ projectId: 1, fullName: 1 }, { unique: true });
 
 // Encryption key from environment variable
 const ENCRYPTION_KEY = process.env['ENCRYPTION_KEY'] || 'default-key-for-development-only-change-in-production';

@@ -113,6 +113,7 @@ export function ProjectView({
         <TopBar
           onAICopilotToggle={onAICopilotToggle}
           aiCopilotOpen={aiCopilotOpen}
+          projectId={selectedProject.id}
         />
         
         <div className="flex-1 flex overflow-hidden">
