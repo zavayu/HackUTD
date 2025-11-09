@@ -207,16 +207,32 @@ const ENCRYPTION_KEY = process.env['ENCRYPTION_KEY'] || 'default-key-for-develop
 
 // Method to encrypt access token
 GitHubRepoSchema.methods['encryptAccessToken'] = function(token: string): string {
-  const cipher = crypto.createCipher('aes-256-cbc', ENCRYPTION_KEY);
+  const iv = crypto.randomBytes(16);
+  const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
+  const cipher = crypto.createCipher('aes-256-cbc', key);
+  
   let encrypted = cipher.update(token, 'utf8', 'hex');
   encrypted += cipher.final('hex');
-  return encrypted;
+  
+  return `${iv.toString('hex')}:${encrypted}`;
 };
 
 // Method to decrypt access token
 GitHubRepoSchema.methods['decryptAccessToken'] = function(): string {
-  const decipher = crypto.createDecipher('aes-256-cbc', ENCRYPTION_KEY);
-  let decrypted = decipher.update((this as any).accessToken, 'hex', 'utf8');
+  const tokenData = (this as any).accessToken.replace('encrypted:', '');
+  const parts = tokenData.split(':');
+  
+  if (parts.length !== 2) {
+    throw new Error('Invalid encrypted token format');
+  }
+  
+  const iv = Buffer.from(parts[0], 'hex');
+  const encrypted = parts[1];
+  
+  const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
+  const decipher = crypto.createDecipher('aes-256-cbc', key);
+  
+  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
 };
