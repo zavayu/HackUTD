@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProjectView } from '../views/ProjectView';
 import { useTheme } from '../hooks/useTheme';
+import { useUser } from '../contexts/UserContext';
 import { projectService, Project as ApiProject } from '../services/projectService';
 import { issueService, Issue } from '../services/issueService';
 import { sprintService, Sprint } from '../services/sprintService';
@@ -41,6 +42,13 @@ interface FrontendProject {
   name: string;
   color: string;
   description?: string;
+  members?: Array<{
+    userId: string;
+    email: string;
+    name: string;
+    role: 'owner' | 'admin' | 'member';
+    addedAt: string;
+  }>;
   stats?: {
     stories: number;
     sprints: number;
@@ -53,6 +61,7 @@ const mapApiProjectToFrontend = (project: ApiProject, index: number): FrontendPr
   name: project.name,
   color: ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500'][index % 4],
   description: project.description,
+  members: (project as any).members || [],
   stats: project.stats,
 });
 
@@ -60,6 +69,7 @@ export function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { theme, themeMode, handleThemeChange, handleThemeModeChange } = useTheme();
+  const { user } = useUser();
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [aiCopilotOpen, setAiCopilotOpen] = useState(false);
@@ -325,6 +335,41 @@ export function ProjectPage() {
     }
   };
 
+  const handleAddMember = async (email: string, role: 'admin' | 'member') => {
+    try {
+      const response = await projectService.addMember(projectId!, email, role);
+      if (response.success) {
+        toast.success('Member added!', {
+          description: `${email} has been added to the project`,
+          duration: 2000,
+        });
+        await loadProjectData();
+      }
+    } catch (error: any) {
+      toast.error('Failed to add member', {
+        description: error.message,
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleRemoveMember = async (email: string) => {
+    try {
+      const response = await projectService.removeMember(projectId!, email);
+      if (response.success) {
+        toast.success('Member removed', {
+          duration: 1500,
+        });
+        await loadProjectData();
+      }
+    } catch (error: any) {
+      toast.error('Failed to remove member', {
+        description: error.message,
+        duration: 3000,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -364,6 +409,7 @@ export function ProjectPage() {
       projects={allProjects}
       sprints={sprints}
       activeSprint={activeSprint}
+      ownerEmail={user.email}
       onTabChange={setActiveTab}
       onAICopilotToggle={() => setAiCopilotOpen(!aiCopilotOpen)}
       onNewStoryModalToggle={() => setNewStoryModalOpen(!newStoryModalOpen)}
@@ -381,6 +427,8 @@ export function ProjectPage() {
       onCompleteSprint={handleCompleteSprint}
       onAddIssuesToSprint={handleAddIssuesToSprint}
       onRemoveIssueFromSprint={handleRemoveIssueFromSprint}
+      onAddMember={handleAddMember}
+      onRemoveMember={handleRemoveMember}
     />
   );
 }

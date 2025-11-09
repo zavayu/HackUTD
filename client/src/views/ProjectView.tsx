@@ -36,6 +36,7 @@ interface ProjectViewProps {
   projects: Project[];
   sprints: Sprint[];
   activeSprint: Sprint | null;
+  ownerEmail: string;
   onTabChange: (tab: string) => void;
   onAICopilotToggle: () => void;
   onNewStoryModalToggle: () => void;
@@ -53,6 +54,8 @@ interface ProjectViewProps {
   onCompleteSprint: (sprintId: string) => void;
   onAddIssuesToSprint: (sprintId: string, issueIds: string[]) => void;
   onRemoveIssueFromSprint: (sprintId: string, issueId: string) => void;
+  onAddMember: (email: string, role: 'admin' | 'member') => void;
+  onRemoveMember: (email: string) => void;
 }
 
 export function ProjectView({
@@ -66,6 +69,7 @@ export function ProjectView({
   projects,
   sprints,
   activeSprint,
+  ownerEmail,
   onTabChange,
   onAICopilotToggle,
   onNewStoryModalToggle,
@@ -83,6 +87,8 @@ export function ProjectView({
   onCompleteSprint,
   onAddIssuesToSprint,
   onRemoveIssueFromSprint,
+  onAddMember,
+  onRemoveMember,
 }: ProjectViewProps) {
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -108,10 +114,13 @@ export function ProjectView({
                 selectedProject={selectedProject}
                 projects={projects}
                 theme={theme}
+                ownerEmail={ownerEmail}
                 onProjectChange={onProjectChange}
                 onThemeChange={onThemeChange}
                 onTabChange={onTabChange}
                 onNewStoryClick={onNewStoryModalToggle}
+                onAddMember={onAddMember}
+                onRemoveMember={onRemoveMember}
               />
             )}
 

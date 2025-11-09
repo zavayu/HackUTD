@@ -10,11 +10,20 @@ export interface BacklogItem {
   storyPoints: number;
 }
 
+export interface ProjectMember {
+  userId: string;
+  email: string;
+  name: string;
+  role: 'owner' | 'admin' | 'member';
+  addedAt: string;
+}
+
 export interface Project {
   id: string;
   name: string;
   color: string;
   description?: string;
+  members?: ProjectMember[];
   stats?: {
     stories: number;
     sprints: number;
