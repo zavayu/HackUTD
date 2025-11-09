@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProjectView } from '../views/ProjectView';
 import { useTheme } from '../hooks/useTheme';
@@ -21,6 +21,16 @@ export function ProjectPage() {
   const [aiCopilotOpen, setAiCopilotOpen] = useState(false);
   const [newStoryModalOpen, setNewStoryModalOpen] = useState(false);
   const [backlogItems, setBacklogItems] = useState<BacklogItem[]>(initialBacklogItems);
+
+  // Listen for settings navigation from profile dropdown
+  useEffect(() => {
+    const handleNavigateToSettings = () => {
+      setActiveTab('settings');
+    };
+
+    window.addEventListener('navigate-to-settings', handleNavigateToSettings);
+    return () => window.removeEventListener('navigate-to-settings', handleNavigateToSettings);
+  }, []);
 
   const selectedProject = projects.find((p) => p.id === projectId) || projects[0];
 

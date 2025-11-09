@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Search, Sparkles, Github, CheckCircle2 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useGitHub } from './GitHubContext';
 import { GitHubConnectionModal } from './GitHubConnectionModal';
+import { ProfileDropdown } from './ProfileDropdown';
 
 interface TopBarProps {
   onAICopilotToggle: () => void;
@@ -74,10 +74,7 @@ export function TopBar({ onAICopilotToggle, aiCopilotOpen }: TopBarProps) {
             <Sparkles className="w-4 h-4" />
             <span className="text-sm">Ask AI Copilot</span>
           </button>
-          <Avatar className="cursor-pointer ring-2 ring-border hover:ring-primary/50 transition-all">
-            <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
-            <AvatarFallback>PM</AvatarFallback>
-          </Avatar>
+          <ProfileDropdown />
         </div>
       </div>
 
