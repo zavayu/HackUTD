@@ -108,7 +108,7 @@ Authorization: Bearer <token>
   "projects": [
     {
       "_id": "507f1f77bcf86cd799439011",
-      "name": "AI ProductHub",
+      "name": "ProdigyPM",
       "description": "AI-powered product management platform",
       "status": "active",
       "stats": {
@@ -137,7 +137,7 @@ Authorization: Bearer <token>
   "success": true,
   "project": {
     "_id": "507f1f77bcf86cd799439011",
-    "name": "AI ProductHub",
+    "name": "ProdigyPM",
     "description": "AI-powered product management platform",
     "status": "active",
     "stats": {

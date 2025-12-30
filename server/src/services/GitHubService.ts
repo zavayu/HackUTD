@@ -88,7 +88,7 @@ export class GitHubService {
     
     const params = {
       since: sinceDate.toISOString(),
-      per_page: 30 // Reduced to 30 since we'll fetch details for each
+      per_page: 50 // Fetch up to 50 commits
     };
 
     logger.info('Fetching GitHub commits', { 
@@ -103,9 +103,9 @@ export class GitHubService {
       `fetch commits for ${repoFullName}`
     );
 
-    // Fetch detailed stats for each commit (limited to first 20 to avoid rate limits)
+    // Fetch detailed stats for each commit (limited to first 50 to avoid rate limits)
     const commitsWithStats = await Promise.all(
-      commits.slice(0, 20).map(async (commit) => {
+      commits.slice(0, 50).map(async (commit) => {
         try {
           const detailUrl = `${this.baseURL}/repos/${repoFullName}/commits/${commit.sha}`;
           const detailedCommit = await this.makeRequestWithRetry<any>(

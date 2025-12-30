@@ -5,6 +5,7 @@ export interface IProject extends Document {
   name: string;
   description: string;
   status: 'active' | 'archived';
+  deadline?: Date;
   members: Array<{
     userId: mongoose.Types.ObjectId;
     email: string;
@@ -42,6 +43,10 @@ const ProjectSchema = new Schema<IProject>({
       message: 'Status must be either active or archived'
     },
     default: 'active'
+  },
+  deadline: {
+    type: Date,
+    required: false
   },
   members: [{
     userId: {

@@ -84,9 +84,9 @@ export function ProjectsPage() {
         });
     };
 
-    const handleCreateProject = async (name: string, description: string) => {
+    const handleCreateProject = async (name: string, description: string, deadline?: string) => {
         try {
-            const response = await projectService.createProject(name, description);
+            const response = await projectService.createProject(name, description, deadline);
             
             if (response.success && response.project) {
                 toast.success('Project created!', {
@@ -155,10 +155,11 @@ function CreateProjectModal({
     onCreate 
 }: { 
     onClose: () => void; 
-    onCreate: (name: string, description: string) => void;
+    onCreate: (name: string, description: string, deadline?: string) => void;
 }) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [deadline, setDeadline] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -166,7 +167,7 @@ function CreateProjectModal({
         if (!name.trim()) return;
         
         setLoading(true);
-        await onCreate(name, description);
+        await onCreate(name, description, deadline || undefined);
         setLoading(false);
     };
 
@@ -197,6 +198,16 @@ function CreateProjectModal({
                             className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                             placeholder="What is this project about?"
                             rows={3}
+                        />
+                    </div>
+                    
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Deadline (Optional)</label>
+                        <input
+                            type="date"
+                            value={deadline}
+                            onChange={(e) => setDeadline(e.target.value)}
+                            className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
                     </div>
                     

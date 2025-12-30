@@ -1,9 +1,13 @@
 import { AIInsightsView } from '../components/AIInsightsView';
 
-export function InsightsView() {
+interface InsightsViewProps {
+  projectId: string;
+}
+
+export function InsightsView({ projectId }: InsightsViewProps) {
   return (
     <div className="p-8">
-      <AIInsightsView />
+      <AIInsightsView projectId={projectId} />
     </div>
   );
 }

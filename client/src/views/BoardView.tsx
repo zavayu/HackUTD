@@ -24,6 +24,8 @@ interface BoardViewProps {
     goal: string;
     startDate: string;
     endDate: string;
+    actualStartDate?: string;
+    actualEndDate?: string;
   } | null;
 }
 
@@ -60,6 +62,19 @@ export function BoardView({
               : 'Visualize and manage your work with a kanban board'
             }
           </p>
+          {activeSprint && activeSprint.actualStartDate && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Started: {new Date(activeSprint.actualStartDate).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+              })} • Planned end: {new Date(activeSprint.endDate).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </p>
+          )}
         </div>
         <ThemeToggle theme={theme} onThemeChange={onThemeChange} />
       </div>

@@ -67,11 +67,22 @@ export class ProjectService {
     }
 
     try {
+      // Get user info for adding to members
+      const User = require('../models/User').User;
+      const user = await User.findById(userId);
+      
       const projectData: CreateProjectData = {
         userId,
         name: data.name.trim(),
         status: data.status || 'active',
-        connectedRepos: data.connectedRepos || []
+        connectedRepos: data.connectedRepos || [],
+        members: user ? [{
+          userId: user._id,
+          email: user.email,
+          name: user.name || user.email,
+          role: 'owner' as const,
+          addedAt: new Date()
+        }] : []
       };
 
       if (data.description) {

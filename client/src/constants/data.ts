@@ -65,7 +65,7 @@ export const initialBacklogItems: BacklogItem[] = [
 export const projects: Project[] = [
   { 
     id: '1', 
-    name: 'AI ProductHub', 
+    name: 'ProdigyPM', 
     color: 'bg-blue-500',
     description: 'AI-powered product management platform with intelligent insights',
     stats: { stories: 24, sprints: 8, members: 5 },

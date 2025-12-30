@@ -209,6 +209,16 @@ Respond with ONLY the JSON object, nothing else.`;
       throw new Error(`Failed to enhance story: ${error.message}`);
     }
   }
+
+  async chat(prompt: string): Promise<string> {
+    try {
+      const text = await this.tryGenerateWithFallback(prompt);
+      return text.trim();
+    } catch (error: any) {
+      console.error('Gemini Chat Error:', error);
+      throw new Error(`Failed to get chat response: ${error.message}`);
+    }
+  }
 }
 
 export const geminiService = new GeminiService();

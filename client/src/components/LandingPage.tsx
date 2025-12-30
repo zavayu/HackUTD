@@ -46,15 +46,18 @@ export function LandingPage({
       <div className="border-b border-border bg-card">
         <div className="max-w-7xl mx-auto px-8 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <button 
+              onClick={() => window.location.href = '/'}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                 <Zap className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h2 className="text-foreground">AI ProductHub</h2>
+              <div className="text-left">
+                <h2 className="text-foreground">ProdigyPM</h2>
                 <p className="text-sm text-muted-foreground">Select a project to continue</p>
               </div>
-            </div>
+            </button>
 
             <button
               onClick={onCreateProject}
@@ -268,7 +271,7 @@ export function LandingPage({
             </div>
             <h3 className="mb-2 text-foreground">No projects yet</h3>
             <p className="text-muted-foreground mb-6">
-              Create your first project to get started with AI ProductHub
+              Create your first project to get started with ProdigyPM
             </p>
             <button
               onClick={onCreateProject}
